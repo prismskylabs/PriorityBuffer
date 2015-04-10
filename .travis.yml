@@ -26,6 +26,7 @@ install:
   - rm -rf cmake-3.2.1 cmake-3.2.1.tar.gz
   # Install protobuf
   - sudo apt-get install libprotobuf-dev -y --force-yes
+  - sudo apt-get install protobuf-compiler -y --force-yes
 
 before_script:
   - cmake --version
