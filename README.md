@@ -1,1 +1,1 @@
-# PriorityBuffer [![Build Status](https://travis-ci.org/prismskylabs/PriorityBuffer.svg?branch=master)](https://travis-ci.org/prismskylabs/PriorityBuffer)
+# PriorityBuffer [![Build Status](https://travis-ci.org/prismskylabs/PriorityBuffer.svg?branch=master)](https://travis-ci.org/prismskylabs/PriorityBuffer) [![Coverage Status](https://coveralls.io/repos/prismskylabs/PriorityBuffer/badge.svg)](https://coveralls.io/r/prismskylabs/PriorityBuffer)
