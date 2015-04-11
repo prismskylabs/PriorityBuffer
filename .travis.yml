@@ -6,9 +6,15 @@ compiler:
 
 sudo: required
 
+matrix:
+  include:
+    - compiler: gcc
+      env: GENERATE_COVERAGE=ON
+
 before_install:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update
+  - if [ "$GENERATE_COVERAGE" == "ON" ]; then sudo pip install cpp-coveralls; fi
 
 install:
   # Install latest g++ compiler
@@ -37,3 +43,6 @@ before_script:
 script:
   - make VERBOSE=1
   - ctest -V
+
+after_success:
+  - if [ "$GENERATE_COVERAGE" == "ON" ]; then coveralls --gcov /usr/bin/gcov-4.8 -i 'src' -r ../ --verbose; fi
