@@ -26,3 +26,23 @@ if(BUILD_PRIORITYBUFFER_TESTS)
     _set_cache(GTEST_BOTH_LIBRARIES "Location of both gtest libraries")
     _set_cache(GTEST_INCLUDE_DIRS "Location of gtest include files")
 endif()
+
+
+# Protobuf configuration
+
+find_package(Protobuf REQUIRED)
+
+if(USE_SYSTEM_PROTOBUF)
+    find_package(Protobuf)
+endif()
+if(NOT USE_SYSTEM_PROTOBUF OR NOT PROTOBUF_FOUND)
+    message(FATAL_ERROR "System libprotobuf and protoc is required to proceed.\n"
+        "If you're using OS X and have Homebrew installed, you can use the command:\n"
+        "\tbrew install protobuf\n"
+        "If you're using a Linux distribution like Ubuntu, you can use the command:\n"
+        "\tapt-get install libprotobuf-dev protoc")
+endif()
+
+_set_cache(PROTOBUF_FOUND "Set if libprotobuf was found or built")
+_set_cache(PROTOBUF_LIBRARIES "Location of libprotobuf")
+_set_cache(PROTOBUF_INCLUDE_DIRS "Location of protobuf include files")

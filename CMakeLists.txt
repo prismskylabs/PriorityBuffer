@@ -40,9 +40,25 @@ macro(_declare_option OPTION_NAME OPTION_TEXT OPTION_DEFAULT)
         # Allow setting the option through an environment variable
         set(${OPTION_NAME} $ENV{${OPTION_NAME}})
     endif()
-    message(STATUS "  ${OPTION_NAME}: ${${OPTION_NAME}}")
+    message(STATUS "|  ${OPTION_NAME}: ${${OPTION_NAME}}")
 endmacro()
 
 message(STATUS "${CMAKE_PROJECT_NAME} CMake Options")
+message(STATUS "/================================================================================")
+_declare_option(USE_SYSTEM_GTEST
+    "If ON, this project will look in the system paths for an installed gtest library" OFF)
+_declare_option(USE_SYSTEM_PROTOBUF
+    "If ON, this project will look in the system paths for an installed protobuf library and compiler" ON)
+_declare_option(BUILD_PRIORITYBUFFER_TESTS
+    "If ON, this project will build the unit tests" ON)
+message(STATUS "\\================================================================================")
 
+if(BUILD_PRIORITYBUFFER_TESTS)
+    enable_testing()
+endif()
+
+add_subdirectory(3rdParty)
+if(BUILD_PRIORITYBUFFER_TESTS)
+    add_subdirectory(test)
+endif()
 add_subdirectory(src)
