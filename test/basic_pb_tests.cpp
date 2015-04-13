@@ -55,7 +55,7 @@ TEST(BasicProtobufTests, OutOfOrderTest) {
     int priority_at = 0;
 
     auto ordered_priority =
-        [ordered_priorities, &priority_at] (const Basic& basic) -> unsigned long long {
+        [&ordered_priorities, &priority_at] (const Basic& basic) -> unsigned long long {
             return ordered_priorities[priority_at++];
         };
 

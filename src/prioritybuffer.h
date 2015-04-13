@@ -19,7 +19,7 @@ class PriorityBuffer {
     void Push(const T& t) {
         auto priority = get_priority_(t);
         auto find = std::find_if(objects_.begin(), objects_.end(),
-                [priority] (const PriorityObject& o) {
+                [&priority] (const PriorityObject& o) {
                     return priority >= o.first;
                 });
         if (find == objects_.begin()) {
