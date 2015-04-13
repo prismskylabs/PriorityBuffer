@@ -54,9 +54,10 @@ TEST(BasicProtobufTests, OutOfOrderTest) {
     std::vector<unsigned long long> ordered_priorities{5, 3, 7, 1, 8, 2};
     int priority_at = 0;
 
-    auto ordered_priority = [&] (const Basic& basic) -> unsigned long long {
-        return ordered_priorities[priority_at++];
-    };
+    auto ordered_priority =
+        [ordered_priorities, &priority_at] (const Basic& basic) -> unsigned long long {
+            return ordered_priorities[priority_at++];
+        };
 
     PriorityBuffer<Basic> basics{ordered_priority};
     for (auto& priority : ordered_priorities) {
