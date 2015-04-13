@@ -49,7 +49,6 @@ TEST(BasicProtobufTests, ReversePriorityTest) {
     }
 }
 
-#include <iostream>
 TEST(BasicProtobufTests, OutOfOrderTest) {
     std::vector<unsigned long long> ordered_priorities{5, 3, 7, 1, 8, 2};
     int priority_at = 0;
