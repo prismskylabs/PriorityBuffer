@@ -14,7 +14,7 @@ matrix:
 before_install:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - if [ "$CXX" == "clang++" ]; then sudo add-apt-repository ppa:h-rayflood/llvm -y; fi
-  - if [ "$CXX" == "clang++" ]; then sudo add-apt-repository 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise main' -y; fi
+  - if [ "$CXX" == "clang++" ]; then sudo add-apt-repository 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main' -y; fi
   - if [ "$CXX" == "clang++" ]; then wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -; fi
   - sudo apt-get update
   - if [ "$GENERATE_COVERAGE" == "ON" ]; then sudo pip install cpp-coveralls; fi
