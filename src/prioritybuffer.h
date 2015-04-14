@@ -9,10 +9,6 @@
 #include <string>
 #include <tuple>
 
-#define PRIORITY 0
-#define OBJECT 1
-#define HASH 2
-
 
 template <typename T>
 class PriorityBuffer {
@@ -68,15 +64,15 @@ class PriorityBuffer {
     }
 
     static std::string get_hash_(PriorityObject priority_object) {
-        return std::get<HASH>(priority_object);
+        return std::get<2>(priority_object);
     }
 
     static T get_object_(PriorityObject priority_object) {
-        return std::get<OBJECT>(priority_object);
+        return std::get<1>(priority_object);
     }
 
     static unsigned long long get_priority_(PriorityObject priority_object) {
-        return std::get<PRIORITY>(priority_object);
+        return std::get<0>(priority_object);
     }
 
     PriorityFunction make_priority_;
