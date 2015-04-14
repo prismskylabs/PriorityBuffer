@@ -23,18 +23,19 @@ class PriorityBuffer {
 
     void Push(const T& t) {
         auto priority = make_priority_(t);
+        auto hash = make_hash_();
         auto find = std::find_if(objects_.begin(), objects_.end(),
                 [&priority] (const PriorityObject& o) {
                     return priority >= get_priority_(o);
                 });
         if (find == objects_.begin()) {
-            objects_.emplace_front(priority, t, make_hash_());
+            objects_.emplace_front(priority, t, hash);
         } else if (find == objects_.end()) {
-            objects_.emplace_back(priority, t, make_hash_());
+            objects_.emplace_back(priority, t, hash);
         } else {
             auto position = find - objects_.begin();
             std::rotate(objects_.begin(), objects_.begin() + position, objects_.end());
-            objects_.emplace_front(priority, t, make_hash_());
+            objects_.emplace_front(priority, t, hash);
             std::rotate(objects_.begin(), objects_.end() - position, objects_.end());
         }
     }
