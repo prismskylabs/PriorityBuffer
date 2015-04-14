@@ -22,6 +22,7 @@ class PriorityBuffer {
   public:
     PriorityBuffer(PriorityFunction get_priority=&PriorityBuffer::epoch_priority_)
             : get_priority_{get_priority} {
+        srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
     void Push(const T& t) {
