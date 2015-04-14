@@ -43,8 +43,9 @@ macro(_declare_option OPTION_NAME OPTION_TEXT OPTION_DEFAULT)
     message(STATUS "|  ${OPTION_NAME}: ${${OPTION_NAME}}")
 endmacro()
 
-message(STATUS "${CMAKE_PROJECT_NAME} CMake Options")
 message(STATUS "/================================================================================")
+message(STATUS "| ${CMAKE_PROJECT_NAME} Options")
+message(STATUS "|================================================================================")
 _declare_option(USE_SYSTEM_GTEST
     "If ON, this project will look in the system paths for an installed gtest library" OFF)
 _declare_option(USE_SYSTEM_PROTOBUF
@@ -53,7 +54,6 @@ _declare_option(BUILD_PRIORITYBUFFER_TESTS
     "If ON, this project will build the unit tests" ON)
 _declare_option(GENERATE_COVERAGE
     "If ON, this project will generate coverage reports." OFF)
-message(STATUS "\\================================================================================")
 
 if(BUILD_PRIORITYBUFFER_TESTS)
     enable_testing()
