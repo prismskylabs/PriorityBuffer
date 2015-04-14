@@ -17,7 +17,7 @@ unsigned long long get_priority(const PriorityMessage& message) {
 
 TEST(PriorityProtobufTests, RandomPriorityTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
-    std::default_random_engine generator;
+    std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUM_ITEMS; ++i) {
         PriorityMessage message;
