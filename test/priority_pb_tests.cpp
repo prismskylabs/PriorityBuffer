@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
-#include <iostream>
 #include <random>
 #include <string>
 #include <thread>
@@ -10,6 +9,7 @@
 #include "prioritybuffer.h"
 
 #define NUM_ITEMS 1000
+
 
 unsigned long long get_priority(const PriorityMessage& message) {
     return message.priority();
