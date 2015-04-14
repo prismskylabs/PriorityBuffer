@@ -86,3 +86,16 @@ _set_cache(PROTOBUF_FOUND "Set if libprotobuf was found or built")
 _set_cache(PROTOBUF_LIBRARIES "Location of libprotobuf")
 _set_cache(PROTOBUF_INCLUDE_DIRS "Location of protobuf include files")
 message(STATUS "|================================================================================")
+
+
+# sqlite3
+
+message(STATUS "| sqlite3 Configuration")
+message(STATUS "|================================================================================")
+
+add_subdirectory(sqlite3)
+
+_set_cache(SQLITE_FOUND "Set if libsqlite3 was found or built")
+_set_cache(SQLITE_LIBRARIES "Location of libsqlite3")
+_set_cache(SQLITE_INCLUDE_DIRS "Location of sqlite3 include files")
+message(STATUS "|================================================================================")
