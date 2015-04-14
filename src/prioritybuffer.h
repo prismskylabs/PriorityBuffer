@@ -20,13 +20,13 @@ class PriorityBuffer {
     typedef std::tuple<unsigned long long, T, std::string> PriorityObject;
 
   public:
-    PriorityBuffer(PriorityFunction get_priority=&PriorityBuffer::epoch_priority_)
-            : get_priority_{get_priority} {
+    PriorityBuffer(PriorityFunction make_priority=&PriorityBuffer::epoch_priority_)
+            : make_priority_{make_priority} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
     void Push(const T& t) {
-        auto priority = get_priority_(t);
+        auto priority = make_priority_(t);
         auto find = std::find_if(objects_.begin(), objects_.end(),
                 [&priority] (const PriorityObject& o) {
                     return priority >= std::get<PRIORITY>(o);
@@ -67,7 +67,7 @@ class PriorityBuffer {
         return stream.str();
     }
 
-    PriorityFunction get_priority_;
+    PriorityFunction make_priority_;
     std::deque<PriorityObject> objects_;
 };
 
