@@ -20,7 +20,7 @@ class PriorityBuffer {
     typedef std::tuple<unsigned long long, T, std::string> PriorityObject;
 
   public:
-    PriorityBuffer(PriorityFunction get_priority=&PriorityBuffer::epoch_priority)
+    PriorityBuffer(PriorityFunction get_priority=&PriorityBuffer::epoch_priority_)
             : get_priority_{get_priority} {
     }
 
@@ -49,7 +49,7 @@ class PriorityBuffer {
     }
 
   private:
-    static unsigned long long epoch_priority(const T& t) {
+    static unsigned long long epoch_priority_(const T& t) {
         return std::chrono::steady_clock::now().time_since_epoch().count();
     }
 
