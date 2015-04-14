@@ -29,7 +29,7 @@ class PriorityBuffer {
         auto priority = make_priority_(t);
         auto find = std::find_if(objects_.begin(), objects_.end(),
                 [&priority] (const PriorityObject& o) {
-                    return priority >= std::get<PRIORITY>(o);
+                    return priority >= get_priority_(o);
                 });
         if (find == objects_.begin()) {
             objects_.emplace_front(priority, t, make_hash_());
@@ -46,7 +46,7 @@ class PriorityBuffer {
     T Pop() {
         auto object = objects_.front();
         objects_.pop_front();
-        return std::get<OBJECT>(object);
+        return get_object_(object);
     }
 
   private:
@@ -65,6 +65,18 @@ class PriorityBuffer {
         }
 
         return stream.str();
+    }
+
+    static std::string get_hash_(PriorityObject priority_object) {
+        return std::get<HASH>(priority_object);
+    }
+
+    static T get_object_(PriorityObject priority_object) {
+        return std::get<OBJECT>(priority_object);
+    }
+
+    static unsigned long long get_priority_(PriorityObject priority_object) {
+        return std::get<PRIORITY>(priority_object);
     }
 
     PriorityFunction make_priority_;
