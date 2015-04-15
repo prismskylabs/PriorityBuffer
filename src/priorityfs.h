@@ -14,7 +14,7 @@ class PriorityFS {
     std::string GetFilePath(const std::string& file);
     bool GetInput(const std::string& file, std::ifstream& stream);
     bool GetOutput(const std::string& file, std::ofstream& stream);
-    void Delete(const std::string& file);
+    bool Delete(const std::string& file);
 
   private:
     class Impl;

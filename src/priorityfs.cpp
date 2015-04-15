@@ -15,7 +15,7 @@ class PriorityFS::Impl {
     std::string GetFilePath(const std::string& file);
     bool GetInput(const std::string& file, std::ifstream& stream);
     bool GetOutput(const std::string& file, std::ofstream& stream);
-    void Delete(const std::string& file);
+    bool Delete(const std::string& file);
 
   private:
     fs::path buffer_path_;
@@ -48,9 +48,9 @@ bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream)
     return false;
 }
 
-void PriorityFS::Impl::Delete(const std::string& file) {
+bool PriorityFS::Impl::Delete(const std::string& file) {
     auto file_path = buffer_path_ / fs::path{file};
-    fs::remove(buffer_path_ / fs::path{file});
+    return fs::remove(buffer_path_ / fs::path{file});
 }
 
 
@@ -72,6 +72,6 @@ bool PriorityFS::GetOutput(const std::string& file, std::ofstream& stream) {
     return pimpl_->GetOutput(file, stream);
 }
 
-void PriorityFS::Delete(const std::string& file) {
-    pimpl_->Delete(file);
+bool PriorityFS::Delete(const std::string& file) {
+    return pimpl_->Delete(file);
 }
