@@ -7,9 +7,3 @@
 [submodule "3rdParty/system"]
 	path = 3rdParty/boostsystem
 	url = https://github.com/prismskylabs/boostsystem.git
-[submodule "3rdParty/predef"]
-	path = 3rdParty/boostpredef
-	url = https://github.com/prismskylabs/boostpredef.git
-[submodule "3rdParty/config"]
-	path = 3rdParty/boostconfig
-	url = https://github.com/prismskylabs/boostconfig.git
