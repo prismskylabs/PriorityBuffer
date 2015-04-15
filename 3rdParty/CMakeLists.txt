@@ -99,3 +99,30 @@ _set_cache(SQLITE_FOUND "Set if libsqlite3 was found or built.")
 _set_cache(SQLITE_LIBRARIES "Location of libsqlite3.")
 _set_cache(SQLITE_INCLUDE_DIRS "Location of sqlite3 include files.")
 message(STATUS "|================================================================================")
+
+
+# Boost Filesystem
+
+message(STATUS "| Boost Filesystem Configuration")
+message(STATUS "|================================================================================")
+
+if (USE_SYSTEM_BOOST)
+    find_package(Boost COMPONENTS system filesystem REQUIRED)
+    set(BOOSTSYSTEM_FOUND TRUE)
+    set(BOOSTSYSTEM_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    set(BOOSTSYSTEM_LIBRARIES ${Boost_LIBRARIES})
+    set(BOOSTFILESYSTEM_FOUND TRUE)
+    set(BOOSTFILESYSTEM_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    set(BOOSTFILESYSTEM_LIBRARIES ${Boost_LIBRARIES})
+else()
+    add_subdirectory(boostsystem)
+    add_subdirectory(boostfilesystem)
+endif()
+
+_set_cache(BOOSTSYSTEM_FOUND "Set if libboostsystem was found or built.")
+_set_cache(BOOSTSYSTEM_LIBRARIES "Location of libboostsystem.")
+_set_cache(BOOSTSYSTEM_INCLUDE_DIRS "Location of boost system include files.")
+_set_cache(BOOSTFILESYSTEM_FOUND "Set if libboostfilesystem was found or built.")
+_set_cache(BOOSTFILESYSTEM_LIBRARIES "Location of libboostfilesystem.")
+_set_cache(BOOSTFILESYSTEM_INCLUDE_DIRS "Location of boost filesystem include files.")
+message(STATUS "|================================================================================")
