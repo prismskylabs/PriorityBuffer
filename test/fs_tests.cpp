@@ -72,7 +72,7 @@ TEST_F(FSFixture, GetInputUnopenedTest) {
 TEST_F(FSFixture, GetInputOpenedTest) {
     PriorityFS priority_fs{"prism_buffer"};
     {
-        auto out_stream = std::ofstream{(buffer_path_ / fs::path{"file"}).native()};
+        std::ofstream out_stream{(buffer_path_ / fs::path{"file"}).native()};
         out_stream << "hello world";
     }
     std::ifstream stream;
@@ -84,7 +84,7 @@ TEST_F(FSFixture, GetInputOpenedTest) {
 TEST_F(FSFixture, GetInputReadTest) {
     PriorityFS priority_fs{"prism_buffer"};
     {
-        auto out_stream = std::ofstream{(buffer_path_ / fs::path{"file"}).native()};
+        std::ofstream out_stream{(buffer_path_ / fs::path{"file"}).native()};
         out_stream << "hello world";
     }
     std::ifstream stream;
@@ -107,7 +107,7 @@ TEST_F(FSFixture, GetOutputNewTest) {
 TEST_F(FSFixture, GetOutputExistingTest) {
     PriorityFS priority_fs{"prism_buffer"};
     {
-        auto out_stream = std::ofstream{(buffer_path_ / fs::path{"file"}).native()};
+        std::ofstream out_stream{(buffer_path_ / fs::path{"file"}).native()};
         out_stream << "hello world";
     }
     std::ofstream stream;
@@ -125,7 +125,7 @@ TEST_F(FSFixture, GetOutputWriteTest) {
     stream << "hello world";
     stream.close();
 
-    auto in_stream = std::ifstream{(buffer_path_ / fs::path{"file"}).native()};
+    std::ifstream in_stream{(buffer_path_ / fs::path{"file"}).native()};
     std::string read((std::istreambuf_iterator<char>(in_stream)), std::istreambuf_iterator<char>());
     EXPECT_EQ(std::string{"hello world"}, read);
 }
@@ -140,7 +140,7 @@ TEST_F(FSFixture, DeleteFalseTest) {
 TEST_F(FSFixture, DeleteTrueTest) {
     PriorityFS priority_fs{"prism_buffer"};
     {
-        auto out_stream = std::ofstream{(buffer_path_ / fs::path{"file"}).native()};
+        std::ofstream out_stream{(buffer_path_ / fs::path{"file"}).native()};
         out_stream << "hello world";
     }
     ASSERT_TRUE(fs::exists(buffer_path_ / fs::path{"file"}));
