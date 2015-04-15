@@ -3,12 +3,14 @@
 
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <functional>
 #include <map>
 #include <sstream>
 #include <string>
 
 #include "prioritydb.h"
+#include "priorityfs.h"
 
 
 template <typename T>
@@ -16,23 +18,61 @@ class PriorityBuffer {
     typedef std::function<unsigned long long(const T&)> PriorityFunction;
 
   public:
-    PriorityBuffer(PriorityFunction make_priority=&PriorityBuffer::epoch_priority_)
-            : make_priority_{make_priority}, db_{} {
+    PriorityBuffer(PriorityFunction make_priority=&PriorityBuffer::epoch_priority_,
+                   const unsigned long long& max_size=100000000LL, const int& max_memory=50,
+                   const std::string& buffer_directory="prism_buffer")
+                : make_priority_{make_priority}, db_{max_size}, fs_{buffer_directory},
+                  max_memory_{max_memory} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
+        db_.Open(fs_.GetFilePath("prism_data.db"));
+    }
+
+    ~PriorityBuffer() {
+        for (auto object = objects_.begin(); object != objects_.end(); ++object) {
+            auto hash = object->first;
+            if (save_to_disk(object->second, hash)) {
+                db_.Update(hash, true);
+            } else {
+                db_.Delete(hash);
+            }
+        }
     }
 
     void Push(const T& t) {
         auto hash = make_hash_();
         objects_[hash] = t;
-        db_.Insert(make_priority_(t), hash);
+        auto size = get_size_(t);
+        db_.Insert(make_priority_(t), hash, size);
+
+        if (objects_.size() > max_memory_) {
+            auto lowest_hash = db_.GetLowestMemoryHash();
+            auto object = objects_[lowest_hash];
+            objects_.erase(lowest_hash);
+            save_to_disk(object, lowest_hash);
+            db_.Update(lowest_hash, true);
+        }
+
+        while (db_.Full()) {
+            auto lowest_hash = db_.GetLowestDiskHash();
+            fs_.Delete(lowest_hash);
+            db_.Delete(lowest_hash);
+        }
     }
 
     T Pop() {
-        auto hash = db_.GetHighestHash();
-        auto object = objects_[hash];
-        objects_.erase(hash);
-        db_.Delete(hash);
-        return object;
+        bool on_disk;
+        auto hash = db_.GetHighestHash(on_disk);
+
+        if (!on_disk) {
+            auto object = objects_[hash];
+            objects_.erase(hash);
+            db_.Delete(hash);
+            return object;
+        } else {
+            auto object = inflate(hash);
+            db_.Delete(hash);
+            return object;
+        }
     }
 
   private:
@@ -53,9 +93,37 @@ class PriorityBuffer {
         return stream.str();
     }
 
+    static unsigned long get_size_(const T& t) {
+        return t.ByteSize();
+    }
+
+    T inflate(const std::string& hash) {
+        T t;
+        auto file_stream = fs_.GetInput(hash);
+        if (file_stream.is_open()) {
+            t.ParseFromIstream(&file_stream);
+            t.CheckInitialized();
+            file_stream.close();
+            fs_.Delete(hash);
+        }
+        return t;
+    }
+
+    bool save_to_disk(const T& t, const std::string& hash) {
+        auto file_stream = fs_.GetOutput(hash);
+        if (file_stream.is_open()) {
+            t.SerializeToOstream(&file_stream);
+            file_stream.close();
+            return true;
+        }
+        return false;
+    }
+
     PriorityDB db_;
+    PriorityFS fs_;
     PriorityFunction make_priority_;
     std::map<std::string, T> objects_;
+    int max_memory_;
 };
 
 #endif
