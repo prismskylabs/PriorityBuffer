@@ -3,13 +3,13 @@
 	url = https://github.com/svn2github/googletest.git
 [submodule "3rdParty/filesystem"]
 	path = 3rdParty/boostfilesystem
-	url = https://github.com/prismskylabs/filesystem.git
+	url = https://github.com/prismskylabs/boostfilesystem.git
 [submodule "3rdParty/system"]
 	path = 3rdParty/boostsystem
-	url = https://github.com/prismskylabs/system.git
+	url = https://github.com/prismskylabs/boostsystem.git
 [submodule "3rdParty/predef"]
 	path = 3rdParty/boostpredef
-	url = https://github.com/prismskylabs/predef.git
+	url = https://github.com/prismskylabs/boostpredef.git
 [submodule "3rdParty/config"]
 	path = 3rdParty/boostconfig
-	url = https://github.com/prismskylabs/config.git
+	url = https://github.com/prismskylabs/boostconfig.git
