@@ -17,13 +17,13 @@ TEST(BasicProtobufTests, DefaultPriorityTest) {
         Basic basic;
         basic.set_value(std::to_string(i));
         EXPECT_EQ(std::to_string(i), basic.value());
-        basic.CheckInitialized();
+        EXPECT_TRUE(basic.IsInitialized());
         basics.Push(basic);
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
     for (int i = NUM_ITEMS - 1; i >= 0; --i) {
         auto basic = basics.Pop();
-        basic.CheckInitialized();
+        EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(i), basic.value());
     }
 }
@@ -37,14 +37,14 @@ TEST(BasicProtobufTests, ReversePriorityTest) {
     for (int i = 0; i < NUM_ITEMS; ++i) {
         Basic basic;
         basic.set_value(std::to_string(i));
+        EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(i), basic.value());
-        basic.CheckInitialized();
         basics.Push(basic);
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
     for (int i = 0; i < NUM_ITEMS; ++i) {
         auto basic = basics.Pop();
-        basic.CheckInitialized();
+        EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(i), basic.value());
     }
 }
@@ -62,15 +62,15 @@ TEST(BasicProtobufTests, OutOfOrderTest) {
     for (auto& priority : ordered_priorities) {
         Basic basic;
         basic.set_value(std::to_string(priority));
+        EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(priority), basic.value());
-        basic.CheckInitialized();
         basics.Push(basic);
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
     std::sort(ordered_priorities.rbegin(), ordered_priorities.rend());
     for (auto& priority : ordered_priorities) {
         auto basic = basics.Pop();
-        basic.CheckInitialized();
+        EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(priority), basic.value());
     }
 }
