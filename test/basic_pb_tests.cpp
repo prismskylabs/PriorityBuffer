@@ -6,12 +6,13 @@
 #include <vector>
 
 #include "basic.pb.h"
+#include "bufferfixture.h"
 #include "prioritybuffer.h"
 
 #define NUM_ITEMS 1000
 
 
-TEST(BasicProtobufTests, DefaultPriorityTest) {
+TEST_F(BufferFixture, DefaultPriorityTest) {
     PriorityBuffer<Basic> basics;
     for (int i = 0; i < NUM_ITEMS; ++i) {
         Basic basic;
@@ -32,7 +33,7 @@ unsigned long long reverse_priority(const Basic& basic) {
     return 20000000000000000LL - std::chrono::steady_clock::now().time_since_epoch().count();
 }
 
-TEST(BasicProtobufTests, ReversePriorityTest) {
+TEST_F(BufferFixture, ReversePriorityTest) {
     PriorityBuffer<Basic> basics{reverse_priority};
     for (int i = 0; i < NUM_ITEMS; ++i) {
         Basic basic;
@@ -49,7 +50,7 @@ TEST(BasicProtobufTests, ReversePriorityTest) {
     }
 }
 
-TEST(BasicProtobufTests, OutOfOrderTest) {
+TEST_F(BufferFixture, OutOfOrderTest) {
     std::vector<unsigned long long> ordered_priorities{5, 3, 7, 1, 8, 2};
     int priority_at = 0;
 
