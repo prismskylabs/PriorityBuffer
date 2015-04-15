@@ -99,8 +99,8 @@ class PriorityBuffer {
 
     T inflate(const std::string& hash) {
         T t;
-        auto file_stream = fs_.GetInput(hash);
-        if (file_stream.is_open()) {
+        std::ifstream file_stream;
+        if (fs_.GetInput(hash, file_stream) && file_stream.is_open()) {
             t.ParseFromIstream(&file_stream);
             t.CheckInitialized();
             file_stream.close();
@@ -110,8 +110,8 @@ class PriorityBuffer {
     }
 
     bool save_to_disk(const T& t, const std::string& hash) {
-        auto file_stream = fs_.GetOutput(hash);
-        if (file_stream.is_open()) {
+        std::ofstream file_stream;
+        if (fs_.GetOutput(hash, file_stream) && file_stream.is_open()) {
             t.SerializeToOstream(&file_stream);
             file_stream.close();
             return true;

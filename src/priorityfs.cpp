@@ -13,8 +13,8 @@ class PriorityFS::Impl {
     Impl(const std::string& buffer_directory);
 
     std::string GetFilePath(const std::string& file);
-    std::ifstream GetInput(const std::string& file);
-    std::ofstream GetOutput(const std::string& file);
+    bool GetInput(const std::string& file, std::ifstream& stream);
+    bool GetOutput(const std::string& file, std::ofstream& stream);
     void Delete(const std::string& file);
 
   private:
@@ -30,22 +30,22 @@ std::string PriorityFS::Impl::GetFilePath(const std::string& file) {
     return (buffer_path_ / fs::path{file}).native();
 }
 
-std::ifstream PriorityFS::Impl::GetInput(const std::string& file) {
+bool PriorityFS::Impl::GetInput(const std::string& file, std::ifstream& stream) {
     auto file_path = buffer_path_ / fs::path{file};
-    std::ifstream stream;
     if (fs::exists(file_path)) {
         stream.open(file_path.native());
+        return true;
     }
-    return stream;
+    return false;
 }
 
-std::ofstream PriorityFS::Impl::GetOutput(const std::string& file) {
+bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream) {
     auto file_path = buffer_path_ / fs::path{file};
-    std::ofstream stream;
     if (!fs::exists(file_path)) {
         stream.open(file_path.native());
+        return true;
     }
-    return stream;
+    return false;
 }
 
 void PriorityFS::Impl::Delete(const std::string& file) {
@@ -64,12 +64,12 @@ std::string PriorityFS::GetFilePath(const std::string& file) {
     return pimpl_->GetFilePath(file);
 }
 
-std::ifstream PriorityFS::GetInput(const std::string& file) {
-    return pimpl_->GetInput(file);
+bool PriorityFS::GetInput(const std::string& file, std::ifstream& stream) {
+    return pimpl_->GetInput(file, stream);
 }
 
-std::ofstream PriorityFS::GetOutput(const std::string& file) {
-    return pimpl_->GetOutput(file);
+bool PriorityFS::GetOutput(const std::string& file, std::ofstream& stream) {
+    return pimpl_->GetOutput(file, stream);
 }
 
 void PriorityFS::Delete(const std::string& file) {
