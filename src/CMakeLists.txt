@@ -4,7 +4,8 @@ set(PRIORITYBUFFER_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL
 
 add_library(${PRIORITYBUFFER_LIBRARIES}
     prioritybuffer.h prioritybuffer.cpp
-    prioritydb.h prioritydb.cpp)
+    prioritydb.h prioritydb.cpp
+    priorityfs.h priorityfs.cpp)
 
 target_include_directories(${PRIORITYBUFFER_LIBRARIES} PRIVATE
     ${PRIORITYBUFFER_INCLUDE_DIRS}
