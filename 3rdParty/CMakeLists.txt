@@ -55,11 +55,11 @@ if(BUILD_PRIORITYBUFFER_TESTS)
         set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
     endif()
 
-    _set_cache(GTEST_FOUND "Set if libgtest was found or built")
-    _set_cache(GTEST_LIBRARIES "Location of libgtest")
-    _set_cache(GTEST_MAIN_LIBRARIES "Location of libgtest-main")
-    _set_cache(GTEST_BOTH_LIBRARIES "Location of both gtest libraries")
-    _set_cache(GTEST_INCLUDE_DIRS "Location of gtest include files")
+    _set_cache(GTEST_FOUND "Set if libgtest was found or built.")
+    _set_cache(GTEST_LIBRARIES "Location of libgtest.")
+    _set_cache(GTEST_MAIN_LIBRARIES "Location of libgtest-main.")
+    _set_cache(GTEST_BOTH_LIBRARIES "Location of both gtest libraries.")
+    _set_cache(GTEST_INCLUDE_DIRS "Location of gtest include files.")
     message(STATUS "|================================================================================")
 endif()
 
@@ -82,9 +82,9 @@ if(NOT USE_SYSTEM_PROTOBUF OR NOT PROTOBUF_FOUND)
         "\tapt-get install libprotobuf-dev protoc")
 endif()
 
-_set_cache(PROTOBUF_FOUND "Set if libprotobuf was found or built")
-_set_cache(PROTOBUF_LIBRARIES "Location of libprotobuf")
-_set_cache(PROTOBUF_INCLUDE_DIRS "Location of protobuf include files")
+_set_cache(PROTOBUF_FOUND "Set if libprotobuf was found or built.")
+_set_cache(PROTOBUF_LIBRARIES "Location of libprotobuf.")
+_set_cache(PROTOBUF_INCLUDE_DIRS "Location of protobuf include files.")
 message(STATUS "|================================================================================")
 
 
@@ -95,7 +95,7 @@ message(STATUS "|===============================================================
 
 add_subdirectory(sqlite3)
 
-_set_cache(SQLITE_FOUND "Set if libsqlite3 was found or built")
-_set_cache(SQLITE_LIBRARIES "Location of libsqlite3")
-_set_cache(SQLITE_INCLUDE_DIRS "Location of sqlite3 include files")
+_set_cache(SQLITE_FOUND "Set if libsqlite3 was found or built.")
+_set_cache(SQLITE_LIBRARIES "Location of libsqlite3.")
+_set_cache(SQLITE_INCLUDE_DIRS "Location of sqlite3 include files.")
 message(STATUS "|================================================================================")
