@@ -41,3 +41,18 @@ target_link_libraries(priority_pb_tests
     ${PROTOBUF_LIBRARIES})
 
 add_test(NAME priority_pb_tests COMMAND priority_pb_tests)
+
+add_executable(fs_tests
+    fs_tests.cpp)
+
+target_include_directories(fs_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PRIORITYBUFFER_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
+    ${BOOSTFILESYSTEM_INCLUDE_DIRS})
+
+target_link_libraries(fs_tests
+    ${GTEST_MAIN_LIBRARIES}
+    ${PRIORITYBUFFER_LIBRARIES})
+
+add_test(NAME fs_tests COMMAND fs_tests)
