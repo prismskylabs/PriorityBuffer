@@ -7,3 +7,6 @@
 [submodule "3rdParty/system"]
 	path = 3rdParty/boostsystem
 	url = https://github.com/prismskylabs/boostsystem.git
+[submodule "3rdParty/boostinclude"]
+	path = 3rdParty/boostinclude
+	url = https://github.com/prismskylabs/boostinclude.git
