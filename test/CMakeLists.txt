@@ -9,12 +9,14 @@ target_include_directories(basic_pb_tests PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${PRIORITYBUFFER_INCLUDE_DIRS}
     ${GTEST_INCLUDE_DIRS}
-    ${PROTOBUF_INCLUDE_DIRS})
+    ${PROTOBUF_INCLUDE_DIRS}
+    ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(basic_pb_tests
     ${GTEST_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES}
-    ${PROTOBUF_LIBRARIES})
+    ${PROTOBUF_LIBRARIES}
+    ${BOOSTFILESYSTEM_LIBRARIES})
 
 add_test(NAME basic_pb_tests COMMAND basic_pb_tests)
 
@@ -29,11 +31,13 @@ target_include_directories(priority_pb_tests PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${PRIORITYBUFFER_INCLUDE_DIRS}
     ${GTEST_INCLUDE_DIRS}
-    ${PROTOBUF_INCLUDE_DIRS})
+    ${PROTOBUF_INCLUDE_DIRS}
+    ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(priority_pb_tests
     ${GTEST_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES}
-    ${PROTOBUF_LIBRARIES})
+    ${PROTOBUF_LIBRARIES}
+    ${BOOSTFILESYSTEM_LIBRARIES})
 
 add_test(NAME priority_pb_tests COMMAND priority_pb_tests)
