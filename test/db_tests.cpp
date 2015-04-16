@@ -216,6 +216,17 @@ TEST_F(DBFixture, InitialEmptyDBAfterDestructorTest) {
     EXPECT_EQ(0, response.size());
 }
 
+TEST_F(DBFixture, InsertEmptyHashTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "", 5, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+}
+
 TEST_F(DBFixture, InsertSingleTest) {
     PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
