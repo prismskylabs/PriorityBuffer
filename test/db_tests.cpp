@@ -791,3 +791,263 @@ TEST_F(DBFixture, HighestHashManyOnDiskTest) {
     EXPECT_EQ(std::to_string(99 * 99), db.GetHighestHash(on_disk));
     EXPECT_TRUE(on_disk);
 }
+
+TEST_F(DBFixture, LowestMemoryHashNoneTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+    EXPECT_TRUE(db.GetLowestMemoryHash().empty());
+}
+
+TEST_F(DBFixture, LowestMemoryHashNoneAgainTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    EXPECT_TRUE(db.GetLowestMemoryHash().empty());
+}
+
+TEST_F(DBFixture, LowestMemoryHashSingleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    EXPECT_EQ(std::string{"hash"}, db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestMemoryHashCoupleATest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(3, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hash"}, db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestMemoryHashCoupleBTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestMemoryHashCoupleCTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(3, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hash"}, db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestMemoryHashCoupleDTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(3, "hash", 5, false);
+    db.Insert(1, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestMemoryHashCoupleETest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_TRUE(db.GetLowestMemoryHash().empty());
+}
+
+TEST_F(DBFixture, LowestMemoryHashManyATest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    EXPECT_EQ(std::to_string(0), db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestMemoryHashManyBTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, (i + 1) % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    EXPECT_EQ(std::to_string(1), db.GetLowestMemoryHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashNoneTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+    EXPECT_TRUE(db.GetLowestDiskHash().empty());
+}
+
+TEST_F(DBFixture, LowestDiskHashNoneAgainTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    EXPECT_TRUE(db.GetLowestDiskHash().empty());
+}
+
+TEST_F(DBFixture, LowestDiskHashSingleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    EXPECT_EQ(std::string{"hash"}, db.GetLowestDiskHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashCoupleATest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hash"}, db.GetLowestDiskHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashCoupleBTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(3, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetLowestDiskHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashCoupleCTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hash"}, db.GetLowestDiskHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashCoupleDTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(3, "hash", 5, true);
+    db.Insert(1, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetLowestDiskHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashCoupleETest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(3, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    EXPECT_TRUE(db.GetLowestDiskHash().empty());
+}
+
+TEST_F(DBFixture, LowestDiskHashManyATest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    EXPECT_EQ(std::to_string(1), db.GetLowestDiskHash());
+}
+
+TEST_F(DBFixture, LowestDiskHashManyBTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, (i + 1) % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    EXPECT_EQ(std::to_string(0), db.GetLowestDiskHash());
+}
