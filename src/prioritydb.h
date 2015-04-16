@@ -7,10 +7,9 @@
 
 class PriorityDB {
   public:
-    PriorityDB(const unsigned long long& max_size);
+    PriorityDB(const unsigned long long& max_size, const std::string& path);
     ~PriorityDB();
 
-    int Open(const std::string& path);
     void Insert(const unsigned long long& priority, const std::string& hash,
                 const unsigned long long& size, const bool& on_disk=false);
     void Delete(const std::string& hash);
@@ -23,6 +22,17 @@ class PriorityDB {
   private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
+};
+
+class PriorityDBException : public std::exception {
+  public:
+    PriorityDBException(const std::string& reason) : reason_{reason} {}
+    virtual const char* what() const throw() {
+        return reason_.data();
+    }
+
+  private:
+    std::string reason_;
 };
 
 #endif

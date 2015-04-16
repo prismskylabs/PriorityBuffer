@@ -11,26 +11,19 @@
 #include <sqlite3.h>
 
 
+class PriorityDB::Impl {
+  public:
+    Impl(const unsigned long long& max_size, const std::string& path)
+            : max_size_{max_size}, table_path_{path}, table_name_{"prism_data"} {
+        if (!check_table_()) {
+            create_table_();
+        }
 
-static int callback(void* response_ptr, int num_values, char** values, char** names) {
-    auto response = (std::vector<Record>*) response_ptr;
-    auto record = Record();
-    for (int i = 0; i < num_values; ++i) {
-        if (values[i]) {
-            record[names[i]] = values[i];
+        if (!check_table_()) {
+            throw PriorityDBException{"Data table could not be created"};
         }
     }
 
-    response->push_back(record);
-
-    return 0;
-}
-
-class PriorityDB::Impl {
-  public:
-    Impl(const unsigned long long& max_size) : max_size_{max_size} {}
-
-    int Open(const std::string& path);
     void Insert(const unsigned long long& priority, const std::string& hash,
                 const unsigned long long& size, const bool& on_disk);
     void Delete(const std::string& hash);
@@ -41,27 +34,18 @@ class PriorityDB::Impl {
     bool Full();
 
   private:
-    std::string table_path_;
-    std::string table_name_;
-    unsigned long long max_size_;
     typedef std::map<std::string, std::string> Record;
 
     std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> open_db_();
     bool check_table_();
     void create_table_();
     std::vector<Record> execute_(const std::string& sql);
+    static int callback_(void* response_ptr, int num_values, char** values, char** names);
+
+    std::string table_path_;
+    std::string table_name_;
+    unsigned long long max_size_;
 };
-
-int PriorityDB::Impl::Open(const std::string& path) {
-    table_path_ = path;
-    table_name_ = "prism_data";
-    if (!check_table_()) {
-        create_table_();
-    }
-    check_table_();
-
-    return 0;
-}
 
 void PriorityDB::Impl::Insert(const unsigned long long& priority, const std::string& hash,
                               const unsigned long long& size, const bool& on_disk) {
@@ -210,7 +194,7 @@ std::vector<PriorityDB::Impl::Record>PriorityDB::Impl::execute_(const std::strin
     std::vector<Record> response;
     auto db = open_db_();
     char* error;
-    int rc = sqlite3_exec(db.get(), sql.data(), callback, &response, &error);
+    int rc = sqlite3_exec(db.get(), sql.data(), &PriorityDB::Impl::callback_, &response, &error);
     if (rc != SQLITE_OK) {
         std::cout << "Error: " << error << std::endl;
         sqlite3_free(error);
@@ -219,15 +203,26 @@ std::vector<PriorityDB::Impl::Record>PriorityDB::Impl::execute_(const std::strin
     return response;
 }
 
+int PriorityDB::Impl::callback_(void* response_ptr, int num_values, char** values, char** names) {
+    auto response = (std::vector<Record>*) response_ptr;
+    auto record = Record();
+    for (int i = 0; i < num_values; ++i) {
+        if (values[i]) {
+            record[names[i]] = values[i];
+        }
+    }
+
+    response->push_back(record);
+
+    return 0;
+}
+
 
 // Bridge
 
-PriorityDB::PriorityDB(const unsigned long long& max_size) : pimpl_{ new Impl{max_size} } {}
+PriorityDB::PriorityDB(const unsigned long long& max_size, const std::string& path)
+        : pimpl_{ new Impl{max_size, path} } {}
 PriorityDB::~PriorityDB() {}
-
-int PriorityDB::Open(const std::string& path) {
-    return pimpl_->Open(path);
-}
 
 void PriorityDB::Insert(const unsigned long long& priority, const std::string& hash,
                         const unsigned long long& size, const bool& on_disk) {

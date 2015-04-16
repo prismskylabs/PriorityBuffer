@@ -21,10 +21,10 @@ class PriorityBuffer {
     PriorityBuffer(PriorityFunction make_priority=&PriorityBuffer::epoch_priority_,
                    const unsigned long long& max_size=100000000LL, const int& max_memory=50,
                    const std::string& buffer_directory="prism_buffer")
-                : make_priority_{make_priority}, db_{max_size}, fs_{buffer_directory},
+                : make_priority_{make_priority}, fs_{buffer_directory},
+                  db_{max_size, fs_.GetFilePath("prism_data.db")},
                   max_memory_{max_memory} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
-        db_.Open(fs_.GetFilePath("prism_data.db"));
     }
 
     ~PriorityBuffer() {
@@ -119,8 +119,8 @@ class PriorityBuffer {
         return false;
     }
 
-    PriorityDB db_;
     PriorityFS fs_;
+    PriorityDB db_;
     PriorityFunction make_priority_;
     std::map<std::string, T> objects_;
     int max_memory_;
