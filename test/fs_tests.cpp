@@ -38,6 +38,7 @@ TEST_F(FSFixture, EmptyFSTest) {
 }
 
 TEST_F(FSFixture, ConstructFSTest) {
+    ASSERT_FALSE(fs::exists(buffer_path_));
     PriorityFS priority_fs{"prism_buffer"};
     EXPECT_TRUE(fs::exists(buffer_path_));
 }
@@ -50,6 +51,31 @@ TEST_F(FSFixture, ConstructFSNoDestructTest) {
     EXPECT_TRUE(fs::exists(buffer_path_));
 }
 
+TEST_F(FSFixture, ConstructFSMultipleTest) {
+    ASSERT_FALSE(fs::exists(buffer_path_));
+    {
+        PriorityFS priority_fs{"prism_buffer"};
+        ASSERT_TRUE(fs::exists(buffer_path_));
+    }
+    {
+        PriorityFS priority_fs{"prism_buffer"};
+        EXPECT_TRUE(fs::exists(buffer_path_));
+    }
+    EXPECT_TRUE(fs::exists(buffer_path_));
+}
+
+TEST_F(FSFixture, ConstructThrowTest) {
+    EXPECT_THROW(PriorityFS priority_fs{""}, PriorityFSException);
+}
+
+TEST_F(FSFixture, ConstructCurrentThrowTest) {
+    EXPECT_THROW(PriorityFS priority_fs{"."}, PriorityFSException);
+}
+
+TEST_F(FSFixture, ConstructParentThrowTest) {
+    EXPECT_THROW(PriorityFS priority_fs{".."}, PriorityFSException);
+}
+
 TEST_F(FSFixture, InitialEmptyFSTest) {
     PriorityFS priority_fs{"prism_buffer"};
     EXPECT_TRUE(fs::exists(buffer_path_));
@@ -59,13 +85,46 @@ TEST_F(FSFixture, InitialEmptyFSTest) {
 TEST_F(FSFixture, GetFilePathTest) {
     PriorityFS priority_fs{"prism_buffer"};
     auto path_string = priority_fs.GetFilePath("file");
-    EXPECT_EQ(path_string, (buffer_path_ / fs::path{"file"}).native());
+    EXPECT_EQ(fs::path{path_string}, buffer_path_ / fs::path{"file"});
+}
+
+TEST_F(FSFixture, GetFilePathEmptyTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    auto path_string = priority_fs.GetFilePath("");
+    EXPECT_EQ(fs::path{path_string}, buffer_path_);
+}
+
+TEST_F(FSFixture, GetFilePathCurrentTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    auto path_string = priority_fs.GetFilePath(".");
+    EXPECT_EQ(fs::path{path_string}, buffer_path_ / fs::path{"."});
 }
 
 TEST_F(FSFixture, GetInputUnopenedTest) {
     PriorityFS priority_fs{"prism_buffer"};
     std::ifstream stream;
     EXPECT_FALSE(priority_fs.GetInput("file", stream));
+    EXPECT_FALSE(stream.is_open());
+}
+
+TEST_F(FSFixture, GetInputEmptyTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    std::ifstream stream;
+    EXPECT_FALSE(priority_fs.GetInput("", stream));
+    EXPECT_FALSE(stream.is_open());
+}
+
+TEST_F(FSFixture, GetInputCurrentTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    std::ifstream stream;
+    EXPECT_FALSE(priority_fs.GetInput(".", stream));
+    EXPECT_FALSE(stream.is_open());
+}
+
+TEST_F(FSFixture, GetInputParentTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    std::ifstream stream;
+    EXPECT_FALSE(priority_fs.GetInput("..", stream));
     EXPECT_FALSE(stream.is_open());
 }
 
@@ -116,6 +175,27 @@ TEST_F(FSFixture, GetOutputExistingTest) {
     EXPECT_FALSE(stream.is_open());
 }
 
+TEST_F(FSFixture, GetOutputEmptyTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    std::ofstream stream;
+    EXPECT_FALSE(priority_fs.GetOutput("", stream));
+    EXPECT_FALSE(stream.is_open());
+}
+
+TEST_F(FSFixture, GetOutputCurrentTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    std::ofstream stream;
+    EXPECT_FALSE(priority_fs.GetOutput(".", stream));
+    EXPECT_FALSE(stream.is_open());
+}
+
+TEST_F(FSFixture, GetOutputParentTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    std::ofstream stream;
+    EXPECT_FALSE(priority_fs.GetOutput("..", stream));
+    EXPECT_FALSE(stream.is_open());
+}
+
 TEST_F(FSFixture, GetOutputWriteTest) {
     PriorityFS priority_fs{"prism_buffer"};
     std::ofstream stream;
@@ -137,6 +217,18 @@ TEST_F(FSFixture, DeleteFalseTest) {
     EXPECT_FALSE(fs::exists(buffer_path_ / fs::path{"file"}));
 }
 
+TEST_F(FSFixture, DeleteFalseNullFileTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    EXPECT_FALSE(priority_fs.Delete(""));
+    EXPECT_TRUE(fs::exists(buffer_path_ / fs::path{""}));
+}
+
+TEST_F(FSFixture, DeleteFalseRelativeTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    EXPECT_FALSE(priority_fs.Delete(".."));
+    EXPECT_TRUE(fs::exists(buffer_path_ / fs::path{".."}));
+}
+
 TEST_F(FSFixture, DeleteTrueTest) {
     PriorityFS priority_fs{"prism_buffer"};
     {
@@ -146,4 +238,15 @@ TEST_F(FSFixture, DeleteTrueTest) {
     ASSERT_TRUE(fs::exists(buffer_path_ / fs::path{"file"}));
     EXPECT_TRUE(priority_fs.Delete("file"));
     EXPECT_FALSE(fs::exists(buffer_path_ / fs::path{"file"}));
+}
+
+TEST_F(FSFixture, DeleteTrueRelativeTest) {
+    PriorityFS priority_fs{"prism_buffer"};
+    {
+        std::ofstream out_stream{(buffer_path_ / fs::path{"file"}).native()};
+        out_stream << "hello world";
+    }
+    ASSERT_TRUE(fs::exists(buffer_path_ / fs::path{"../prism_buffer/file"}));
+    EXPECT_TRUE(priority_fs.Delete("../prism_buffer/file"));
+    EXPECT_FALSE(fs::exists(buffer_path_ / fs::path{"../prism_buffer/file"}));
 }

@@ -21,4 +21,15 @@ class PriorityFS {
     std::unique_ptr<Impl> pimpl_;
 };
 
+class PriorityFSException : public std::exception {
+  public:
+    PriorityFSException(const std::string& reason) : reason_{reason} {}
+    virtual const char* what() const throw() {
+        return reason_.data();
+    }
+
+  private:
+    std::string reason_;
+};
+
 #endif

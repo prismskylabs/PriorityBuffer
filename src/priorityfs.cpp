@@ -1,5 +1,7 @@
 #include "priorityfs.h"
 
+#include <exception>
+
 #include <boost/filesystem.hpp>
 
 #include <fstream>
@@ -22,7 +24,13 @@ class PriorityFS::Impl {
 };
 
 PriorityFS::Impl::Impl(const std::string& buffer_directory) {
+    if (buffer_directory.empty()) {
+        throw PriorityFSException{"Cannot initialize PriorityFS with an empty buffer path"};
+    }
     buffer_path_ = fs::temp_directory_path() / fs::path{buffer_directory};
+    if (buffer_path_ <= fs::temp_directory_path() || buffer_path_.filename().native() == "..") {
+        throw PriorityFSException{"PriorityFS must be initialized within the temporary directory"};
+    }
     fs::create_directory(buffer_path_);
 }
 
@@ -32,7 +40,9 @@ std::string PriorityFS::Impl::GetFilePath(const std::string& file) {
 
 bool PriorityFS::Impl::GetInput(const std::string& file, std::ifstream& stream) {
     auto file_path = buffer_path_ / fs::path{file};
-    if (fs::exists(file_path)) {
+    if (!fs::is_directory(file_path) &&
+            file_path.filename().native() != ".." &&
+            fs::exists(file_path)) {
         stream.open(file_path.native());
         return true;
     }
@@ -41,7 +51,9 @@ bool PriorityFS::Impl::GetInput(const std::string& file, std::ifstream& stream) 
 
 bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream) {
     auto file_path = buffer_path_ / fs::path{file};
-    if (!fs::exists(file_path)) {
+    if (!fs::is_directory(file_path) &&
+            file_path.filename().native() != ".." &&
+            !fs::exists(file_path)) {
         stream.open(file_path.native());
         return true;
     }
@@ -50,7 +62,12 @@ bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream)
 
 bool PriorityFS::Impl::Delete(const std::string& file) {
     auto file_path = buffer_path_ / fs::path{file};
-    return fs::remove(buffer_path_ / fs::path{file});
+    if (!fs::is_directory(file_path) &&
+            file_path.filename().native() != ".." &&
+            fs::exists(file_path)) {
+        return fs::remove(buffer_path_ / fs::path{file});
+    }
+    return false;
 }
 
 
