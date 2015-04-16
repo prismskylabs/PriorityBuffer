@@ -1051,3 +1051,70 @@ TEST_F(DBFixture, LowestDiskHashManyBTest) {
     ASSERT_EQ(number_of_records, response.size());
     EXPECT_EQ(std::to_string(0), db.GetLowestDiskHash());
 }
+
+TEST_F(DBFixture, FullEmptyTest) { // Yeah this test name is silly
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullInMemoryUnderTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE - 1, false);
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullInMemoryExactTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE, false);
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullInMemoryOverTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE + 1, false);
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullOnDiskUnderTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE - 1, true);
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullOnDiskExactTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullOnDiskOverTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE + 1, true);
+    EXPECT_TRUE(db.Full());
+}
+
+TEST_F(DBFixture, FullMixedOverCoupleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
+    ASSERT_FALSE(db.Full());
+    db.Insert(3, "hashbrowns", 1, false);
+    EXPECT_FALSE(db.Full());
+}
+
+TEST_F(DBFixture, FullOnDiskOverCoupleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
+    ASSERT_FALSE(db.Full());
+    db.Insert(3, "hashbrowns", 1, true);
+    EXPECT_TRUE(db.Full());
+}
+
+TEST_F(DBFixture, FullOnDiskDeleteCoupleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
+    ASSERT_FALSE(db.Full());
+    db.Insert(3, "hashbrowns", 1, true);
+    ASSERT_TRUE(db.Full());
+    db.Delete("hashbrowns");
+    EXPECT_FALSE(db.Full());
+}
