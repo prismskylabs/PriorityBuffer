@@ -1,7 +1,6 @@
 #include "prioritydb.h"
 
 #include <functional>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -196,8 +195,9 @@ std::vector<PriorityDB::Impl::Record>PriorityDB::Impl::execute_(const std::strin
     char* error;
     int rc = sqlite3_exec(db.get(), sql.data(), &PriorityDB::Impl::callback_, &response, &error);
     if (rc != SQLITE_OK) {
-        std::cout << "Error: " << error << std::endl;
+        auto error_string = std::string{error};
         sqlite3_free(error);
+        throw PriorityDBException{error_string};
     }
 
     return response;
