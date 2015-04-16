@@ -42,24 +42,23 @@ class PriorityDB::Impl {
     bool Full();
 
   private:
-    std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> db_;
+    std::string table_path_;
     std::string table_name_;
     unsigned long long max_size_;
 
-    bool check_table();
-    void create_table();
-    std::vector<Record> execute(const std::string& sql);
+    std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> open_db_();
+    bool check_table_();
+    void create_table_();
+    std::vector<Record> execute_(const std::string& sql);
 };
 
 int PriorityDB::Impl::Open(const std::string& path) {
-    sqlite3* db;
-    sqlite3_open(path.data(), &db);
-    db_ = std::unique_ptr<sqlite3, std::function<int(sqlite3*)>>(db, sqlite3_close);
+    table_path_ = path;
     table_name_ = "prism_data";
-    if (!check_table()) {
-        create_table();
+    if (!check_table_()) {
+        create_table_();
     }
-    check_table();
+    check_table_();
 
     return 0;
 }
@@ -77,7 +76,7 @@ void PriorityDB::Impl::Insert(const unsigned long long& priority, const std::str
            << size << ","
            << on_disk
            << ");";
-    execute(stream.str());
+    execute_(stream.str());
 }
 
 void PriorityDB::Impl::Delete(const std::string& hash) {
@@ -87,7 +86,7 @@ void PriorityDB::Impl::Delete(const std::string& hash) {
            << " WHERE hash='"
            << hash
            << "';";
-    execute(stream.str());
+    execute_(stream.str());
 }
 
 void PriorityDB::Impl::Update(const std::string& hash, const bool& on_disk) {
@@ -99,7 +98,7 @@ void PriorityDB::Impl::Update(const std::string& hash, const bool& on_disk) {
            << " WHERE hash='"
            << hash
            << "';";
-    execute(stream.str());
+    execute_(stream.str());
 }
 
 std::string PriorityDB::Impl::GetHighestHash(bool& on_disk) {
@@ -107,7 +106,7 @@ std::string PriorityDB::Impl::GetHighestHash(bool& on_disk) {
     stream << "SELECT hash, on_disk FROM "
            << table_name_
            << " ORDER BY priority DESC LIMIT 1;";
-    auto response = execute(stream.str());
+    auto response = execute_(stream.str());
     std::string hash;
     if (!response.empty()) {
         auto record = response[0];
@@ -127,7 +126,7 @@ std::string PriorityDB::Impl::GetLowestMemoryHash() {
            << " WHERE on_disk="
            << false
            << " ORDER BY priority ASC LIMIT 1;";
-    auto response = execute(stream.str());
+    auto response = execute_(stream.str());
     std::string hash;
     if (!response.empty()) {
         auto record = response[0];
@@ -146,7 +145,7 @@ std::string PriorityDB::Impl::GetLowestDiskHash() {
            << " WHERE on_disk="
            << true
            << " ORDER BY priority ASC LIMIT 1;";
-    auto response = execute(stream.str());
+    auto response = execute_(stream.str());
     std::string hash;
     if (!response.empty()) {
         auto record = response[0];
@@ -165,7 +164,7 @@ bool PriorityDB::Impl::Full() {
            << " WHERE on_disk="
            << true
            << ";";
-    auto response = execute(stream.str());
+    auto response = execute_(stream.str());
     unsigned long long total = 0;
     if (!response.empty()) {
         auto record = response[0];
@@ -177,17 +176,23 @@ bool PriorityDB::Impl::Full() {
     return total > max_size_;
 }
 
-bool PriorityDB::Impl::check_table() {
+std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> PriorityDB::Impl::open_db_() {
+    sqlite3* sqlite_db;
+    sqlite3_open(table_path_.data(), &sqlite_db);
+    return std::unique_ptr<sqlite3, std::function<int(sqlite3*)>>(sqlite_db, sqlite3_close);
+}
+
+bool PriorityDB::Impl::check_table_() {
     std::stringstream stream;
     stream << "SELECT name FROM sqlite_master WHERE type='table' AND name='"
            << table_name_
            << "';";
-    auto response = execute(stream.str());
+    auto response = execute_(stream.str());
 
     return !response.empty();
 }
 
-void PriorityDB::Impl::create_table() {
+void PriorityDB::Impl::create_table_() {
     std::stringstream stream;
     stream << "CREATE TABLE "
            << table_name_
@@ -198,14 +203,14 @@ void PriorityDB::Impl::create_table() {
            << "size UNSIGNED BIGINT NOT NULL,"
            << "on_disk BOOL NOT NULL"
            << ");";
-    execute(stream.str());
+    execute_(stream.str());
 }
 
-std::vector<Record>PriorityDB::Impl::execute(const std::string& sql) {
-    using namespace std::placeholders;
+std::vector<Record>PriorityDB::Impl::execute_(const std::string& sql) {
     std::vector<Record> response;
+    auto db = open_db_();
     char* error;
-    int rc = sqlite3_exec(db_.get(), sql.data(), callback, &response, &error);
+    int rc = sqlite3_exec(db.get(), sql.data(), callback, &response, &error);
     if (rc != SQLITE_OK) {
         std::cout << "Error: " << error << std::endl;
         sqlite3_free(error);
