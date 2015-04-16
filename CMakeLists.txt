@@ -56,6 +56,8 @@ _declare_option(BUILD_PRIORITYBUFFER_TESTS
     "If ON, this project will build the unit tests." ON)
 _declare_option(GENERATE_COVERAGE
     "If ON, this project will generate coverage reports." OFF)
+_declare_option(NUMBER_MESSAGES_IN_TEST
+    "Integer, this determines how many messages to process for each buffer test." 1000)
 
 if(BUILD_PRIORITYBUFFER_TESTS)
     enable_testing()

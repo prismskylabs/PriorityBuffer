@@ -9,12 +9,14 @@
 #include "bufferfixture.h"
 #include "prioritybuffer.h"
 
-#define NUM_ITEMS 1000
+#ifndef NUMBER_MESSAGES_IN_TEST
+#define NUMBER_MESSAGES_IN_TEST 1000
+#endif
 
 
 TEST_F(BufferFixture, DefaultPriorityTest) {
     PriorityBuffer<Basic> basics;
-    for (int i = 0; i < NUM_ITEMS; ++i) {
+    for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         Basic basic;
         basic.set_value(std::to_string(i));
         EXPECT_EQ(std::to_string(i), basic.value());
@@ -22,7 +24,7 @@ TEST_F(BufferFixture, DefaultPriorityTest) {
         basics.Push(basic);
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
-    for (int i = NUM_ITEMS - 1; i >= 0; --i) {
+    for (int i = NUMBER_MESSAGES_IN_TEST - 1; i >= 0; --i) {
         auto basic = basics.Pop();
         EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(i), basic.value());
@@ -35,7 +37,7 @@ unsigned long long reverse_priority(const Basic& basic) {
 
 TEST_F(BufferFixture, ReversePriorityTest) {
     PriorityBuffer<Basic> basics{reverse_priority};
-    for (int i = 0; i < NUM_ITEMS; ++i) {
+    for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         Basic basic;
         basic.set_value(std::to_string(i));
         EXPECT_TRUE(basic.IsInitialized());
@@ -43,7 +45,7 @@ TEST_F(BufferFixture, ReversePriorityTest) {
         basics.Push(basic);
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
-    for (int i = 0; i < NUM_ITEMS; ++i) {
+    for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto basic = basics.Pop();
         EXPECT_TRUE(basic.IsInitialized());
         EXPECT_EQ(std::to_string(i), basic.value());
