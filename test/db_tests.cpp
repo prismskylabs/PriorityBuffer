@@ -629,3 +629,165 @@ TEST_F(DBFixture, UpdateManyTest) {
         EXPECT_EQ((i + 1) % 2, std::stoi(record["on_disk"]));
     }
 }
+
+TEST_F(DBFixture, HighestHashNoneFalseOnDiskTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+    bool on_disk = false;
+    EXPECT_TRUE(db.GetHighestHash(on_disk).empty());
+    EXPECT_FALSE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashNoneTrueOnDiskTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+    bool on_disk = true;
+    EXPECT_TRUE(db.GetHighestHash(on_disk).empty());
+    EXPECT_TRUE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashSingleInMemoryTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    {
+        bool on_disk = true;
+        EXPECT_EQ(std::string{"hash"}, db.GetHighestHash(on_disk));
+        EXPECT_FALSE(on_disk);
+    }
+    {
+        bool on_disk = false;
+        EXPECT_EQ(std::string{"hash"}, db.GetHighestHash(on_disk));
+        EXPECT_FALSE(on_disk);
+    }
+}
+
+TEST_F(DBFixture, HighestHashSingleOnDiskTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    {
+        bool on_disk = true;
+        EXPECT_EQ(std::string{"hash"}, db.GetHighestHash(on_disk));
+        EXPECT_TRUE(on_disk);
+    }
+    {
+        bool on_disk = false;
+        EXPECT_EQ(std::string{"hash"}, db.GetHighestHash(on_disk));
+        EXPECT_TRUE(on_disk);
+    }
+}
+
+TEST_F(DBFixture, HighestHashCoupleInMemoryTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    bool on_disk;
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetHighestHash(on_disk));
+    EXPECT_FALSE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashCoupleOnDiskTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(3, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    bool on_disk;
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetHighestHash(on_disk));
+    EXPECT_TRUE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashCoupleTiedTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(1, "hashbrowns", 10, false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    bool on_disk;
+    EXPECT_EQ(std::string{"hashbrowns"}, db.GetHighestHash(on_disk));
+    EXPECT_FALSE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashCoupleTiedAgainTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(1, "hashbrowns", 10, true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    bool on_disk;
+    EXPECT_EQ(std::string{"hash"}, db.GetHighestHash(on_disk));
+    EXPECT_FALSE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashManyInMemoryTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, (i + 1) % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    bool on_disk;
+    EXPECT_EQ(std::to_string(99 * 99), db.GetHighestHash(on_disk));
+    EXPECT_FALSE(on_disk);
+}
+
+TEST_F(DBFixture, HighestHashManyOnDiskTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    bool on_disk;
+    EXPECT_EQ(std::to_string(99 * 99), db.GetHighestHash(on_disk));
+    EXPECT_TRUE(on_disk);
+}
