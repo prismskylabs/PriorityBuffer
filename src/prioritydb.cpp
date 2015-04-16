@@ -11,7 +11,6 @@
 #include <sqlite3.h>
 
 
-typedef std::map<std::string, std::string> Record;
 
 static int callback(void* response_ptr, int num_values, char** values, char** names) {
     auto response = (std::vector<Record>*) response_ptr;
@@ -45,6 +44,7 @@ class PriorityDB::Impl {
     std::string table_path_;
     std::string table_name_;
     unsigned long long max_size_;
+    typedef std::map<std::string, std::string> Record;
 
     std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> open_db_();
     bool check_table_();
@@ -206,7 +206,7 @@ void PriorityDB::Impl::create_table_() {
     execute_(stream.str());
 }
 
-std::vector<Record>PriorityDB::Impl::execute_(const std::string& sql) {
+std::vector<PriorityDB::Impl::Record>PriorityDB::Impl::execute_(const std::string& sql) {
     std::vector<Record> response;
     auto db = open_db_();
     char* error;
