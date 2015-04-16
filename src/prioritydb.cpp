@@ -88,7 +88,7 @@ std::string PriorityDB::Impl::GetHighestHash(bool& on_disk) {
     std::stringstream stream;
     stream << "SELECT hash, on_disk FROM "
            << table_name_
-           << " ORDER BY priority DESC LIMIT 1;";
+           << " ORDER BY priority DESC, on_disk ASC LIMIT 1;";
     auto response = execute_(stream.str());
     std::string hash;
     if (!response.empty()) {
