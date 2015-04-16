@@ -28,7 +28,8 @@ PriorityFS::Impl::Impl(const std::string& buffer_directory) {
         throw PriorityFSException{"Cannot initialize PriorityFS with an empty buffer path"};
     }
     buffer_path_ = fs::temp_directory_path() / fs::path{buffer_directory};
-    if (buffer_path_ <= fs::temp_directory_path() || buffer_path_.filename().native() == "..") {
+    if (fs::equivalent(buffer_path_, fs::temp_directory_path()) ||
+            fs::equivalent(buffer_path_, fs::temp_directory_path() / fs::path{".."})) {
         throw PriorityFSException{"PriorityFS must be initialized within the temporary directory"};
     }
     fs::create_directory(buffer_path_);
