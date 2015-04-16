@@ -403,3 +403,229 @@ TEST_F(DBFixture, DeleteManyTest) {
         ASSERT_EQ(number_of_records - i - 1, response.size());
     }
 }
+
+TEST_F(DBFixture, UpdateNullTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Update("", true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    auto record = response[0];
+    ASSERT_EQ(5, record.size());
+    EXPECT_EQ(1, std::stoi(record["id"]));
+    EXPECT_EQ(1, std::stoi(record["priority"]));
+    EXPECT_EQ(std::string{"hash"}, record["hash"]);
+    EXPECT_EQ(5, std::stoi(record["size"]));
+    EXPECT_EQ(false, std::stoi(record["on_disk"]));
+}
+
+TEST_F(DBFixture, UpdateBadHashTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Update("h", true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    auto record = response[0];
+    ASSERT_EQ(5, record.size());
+    EXPECT_EQ(1, std::stoi(record["id"]));
+    EXPECT_EQ(1, std::stoi(record["priority"]));
+    EXPECT_EQ(std::string{"hash"}, record["hash"]);
+    EXPECT_EQ(5, std::stoi(record["size"]));
+    EXPECT_EQ(false, std::stoi(record["on_disk"]));
+}
+
+TEST_F(DBFixture, UpdateSingleFalseToTrueTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Update("hash", true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    auto record = response[0];
+    ASSERT_EQ(5, record.size());
+    EXPECT_EQ(1, std::stoi(record["id"]));
+    EXPECT_EQ(1, std::stoi(record["priority"]));
+    EXPECT_EQ(std::string{"hash"}, record["hash"]);
+    EXPECT_EQ(5, std::stoi(record["size"]));
+    EXPECT_EQ(true, std::stoi(record["on_disk"]));
+}
+
+TEST_F(DBFixture, UpdateSingleTrueToFalseTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Update("hash", false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    auto record = response[0];
+    ASSERT_EQ(5, record.size());
+    EXPECT_EQ(1, std::stoi(record["id"]));
+    EXPECT_EQ(1, std::stoi(record["priority"]));
+    EXPECT_EQ(std::string{"hash"}, record["hash"]);
+    EXPECT_EQ(5, std::stoi(record["size"]));
+    EXPECT_EQ(false, std::stoi(record["on_disk"]));
+}
+
+TEST_F(DBFixture, UpdateSingleFalseToFalseTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Update("hash", false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    auto record = response[0];
+    ASSERT_EQ(5, record.size());
+    EXPECT_EQ(1, std::stoi(record["id"]));
+    EXPECT_EQ(1, std::stoi(record["priority"]));
+    EXPECT_EQ(std::string{"hash"}, record["hash"]);
+    EXPECT_EQ(5, std::stoi(record["size"]));
+    EXPECT_EQ(false, std::stoi(record["on_disk"]));
+}
+
+TEST_F(DBFixture, UpdateSingleTrueToTrueTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Update("hash", true);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+    auto record = response[0];
+    ASSERT_EQ(5, record.size());
+    EXPECT_EQ(1, std::stoi(record["id"]));
+    EXPECT_EQ(1, std::stoi(record["priority"]));
+    EXPECT_EQ(std::string{"hash"}, record["hash"]);
+    EXPECT_EQ(5, std::stoi(record["size"]));
+    EXPECT_EQ(true, std::stoi(record["on_disk"]));
+}
+
+TEST_F(DBFixture, UpdateCoupleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(3, "hashbrowns", 10, true);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(2, response.size());
+    }
+    db.Update("hash", true);
+    db.Update("hashbrowns", false);
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(2, response.size());
+    {
+        auto record = response[0];
+        ASSERT_EQ(5, record.size());
+        EXPECT_EQ(1, std::stoi(record["id"]));
+        EXPECT_EQ(1, std::stoi(record["priority"]));
+        EXPECT_EQ(std::string{"hash"}, record["hash"]);
+        EXPECT_EQ(5, std::stoi(record["size"]));
+        EXPECT_EQ(true, std::stoi(record["on_disk"]));
+    }
+    {
+        auto record = response[1];
+        ASSERT_EQ(5, record.size());
+        EXPECT_EQ(2, std::stoi(record["id"]));
+        EXPECT_EQ(3, std::stoi(record["priority"]));
+        EXPECT_EQ(std::string{"hashbrowns"}, record["hash"]);
+        EXPECT_EQ(10, std::stoi(record["size"]));
+        EXPECT_EQ(false, std::stoi(record["on_disk"]));
+    }
+}
+
+TEST_F(DBFixture, UpdateManyTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+        db.Update(std::to_string(i * i), (i + 1) % 2);
+    }
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(number_of_records, response.size());
+    for (int i = 0; i < number_of_records; ++i) {
+        auto record = response[i];
+        ASSERT_EQ(5, record.size());
+        EXPECT_EQ(i + 1, std::stoi(record["id"]));
+        EXPECT_EQ(i, std::stoi(record["priority"]));
+        EXPECT_EQ(std::to_string(i * i), record["hash"]);
+        EXPECT_EQ(i * 2, std::stoi(record["size"]));
+        EXPECT_EQ((i + 1) % 2, std::stoi(record["on_disk"]));
+    }
+}
