@@ -6,6 +6,7 @@
 #include <fstream>
 #include <functional>
 #include <map>
+#include <mutex>
 #include <sstream>
 #include <string>
 
@@ -39,6 +40,7 @@ class PriorityBuffer {
     }
 
     void Push(const T& t) {
+        std::lock_guard<std::mutex> lock(mutex_);
         auto hash = make_hash_();
         objects_[hash] = t;
         auto size = get_size_(t);
@@ -60,6 +62,7 @@ class PriorityBuffer {
     }
 
     T Pop() {
+        std::lock_guard<std::mutex> lock(mutex_);
         bool on_disk;
         auto hash = db_.GetHighestHash(on_disk);
 
@@ -123,6 +126,7 @@ class PriorityBuffer {
     PriorityDB db_;
     PriorityFunction make_priority_;
     std::map<std::string, T> objects_;
+    std::mutex mutex_;
     int max_memory_;
 };
 
