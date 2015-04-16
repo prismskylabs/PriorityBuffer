@@ -45,6 +45,7 @@ before_script:
   - cmake --version
   - mkdir build
   - cd build
+  - export GTEST_SHUFFLE=1
   - cmake -LAH ..
 
 script:
