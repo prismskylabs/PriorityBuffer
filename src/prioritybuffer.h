@@ -31,11 +31,7 @@ class PriorityBuffer {
     ~PriorityBuffer() {
         for (auto object = objects_.begin(); object != objects_.end(); ++object) {
             auto hash = object->first;
-            if (save_to_disk(object->second, hash)) {
-                db_.Update(hash, true);
-            } else {
-                db_.Delete(hash);
-            }
+            save_to_disk(object->second, hash);
         }
     }
 
@@ -51,7 +47,6 @@ class PriorityBuffer {
             auto object = objects_[lowest_hash];
             objects_.erase(lowest_hash);
             save_to_disk(object, lowest_hash);
-            db_.Update(lowest_hash, true);
         }
 
         while (db_.Full()) {
@@ -117,8 +112,11 @@ class PriorityBuffer {
         if (fs_.GetOutput(hash, file_stream) && file_stream.is_open()) {
             t.SerializeToOstream(&file_stream);
             file_stream.close();
+            db_.Update(hash, true);
             return true;
         }
+        fs_.Delete(hash);
+        db_.Delete(hash);
         return false;
     }
 
