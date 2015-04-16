@@ -50,6 +50,10 @@ class PriorityDB::Impl {
 
 void PriorityDB::Impl::Insert(const unsigned long long& priority, const std::string& hash,
                               const unsigned long long& size, const bool& on_disk) {
+    if (hash.empty()) {
+        return;
+    }
+
     std::stringstream stream;
     stream << "INSERT INTO "
            << table_name_
@@ -65,6 +69,10 @@ void PriorityDB::Impl::Insert(const unsigned long long& priority, const std::str
 }
 
 void PriorityDB::Impl::Delete(const std::string& hash) {
+    if (hash.empty()) {
+        return;
+    }
+
     std::stringstream stream;
     stream << "DELETE FROM "
            << table_name_
@@ -75,6 +83,10 @@ void PriorityDB::Impl::Delete(const std::string& hash) {
 }
 
 void PriorityDB::Impl::Update(const std::string& hash, const bool& on_disk) {
+    if (hash.empty()) {
+        return;
+    }
+
     std::stringstream stream;
     stream << "UPDATE "
            << table_name_
