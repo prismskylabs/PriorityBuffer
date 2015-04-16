@@ -19,9 +19,6 @@ class PriorityDB::Impl {
         }
         if (!check_table_()) {
             create_table_();
-            if (!check_table_()) {
-                throw PriorityDBException{"Data table could not be created"};
-            }
         }
     }
 
