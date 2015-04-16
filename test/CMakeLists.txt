@@ -62,3 +62,18 @@ target_link_libraries(fs_tests
     ${PRIORITYBUFFER_LIBRARIES})
 
 add_test(NAME fs_tests COMMAND fs_tests)
+
+add_executable(db_tests
+    db_tests.cpp)
+
+target_include_directories(db_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PRIORITYBUFFER_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
+    ${BOOSTFILESYSTEM_INCLUDE_DIRS})
+
+target_link_libraries(db_tests
+    ${GTEST_MAIN_LIBRARIES}
+    ${PRIORITYBUFFER_LIBRARIES})
+
+add_test(NAME db_tests COMMAND db_tests)
