@@ -65,15 +65,39 @@ TEST_F(FSFixture, ConstructFSMultipleTest) {
 }
 
 TEST_F(FSFixture, ConstructThrowTest) {
-    EXPECT_THROW(PriorityFS priority_fs{""}, PriorityFSException);
+    bool thrown = false;
+    try {
+        PriorityFS priority_fs{""};
+    } catch (const PriorityFSException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"Cannot initialize PriorityFS with an empty buffer path"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
 }
 
 TEST_F(FSFixture, ConstructCurrentThrowTest) {
-    EXPECT_THROW(PriorityFS priority_fs{"."}, PriorityFSException);
+    bool thrown = false;
+    try {
+        PriorityFS priority_fs{"."};
+    } catch (const PriorityFSException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"PriorityFS must be initialized within the temporary directory"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
 }
 
 TEST_F(FSFixture, ConstructParentThrowTest) {
-    EXPECT_THROW(PriorityFS priority_fs{".."}, PriorityFSException);
+    bool thrown = false;
+    try {
+        PriorityFS priority_fs{".."};
+    } catch (const PriorityFSException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"PriorityFS must be initialized within the temporary directory"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
 }
 
 TEST_F(FSFixture, InitialEmptyFSTest) {
