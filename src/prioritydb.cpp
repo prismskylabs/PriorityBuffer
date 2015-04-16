@@ -14,12 +14,14 @@ class PriorityDB::Impl {
   public:
     Impl(const unsigned long long& max_size, const std::string& path)
             : max_size_{max_size}, table_path_{path}, table_name_{"prism_data"} {
+        if (max_size_ == 0LL) {
+            throw PriorityDBException{"Must specify a nonzero max_size"};
+        }
         if (!check_table_()) {
             create_table_();
-        }
-
-        if (!check_table_()) {
-            throw PriorityDBException{"Data table could not be created"};
+            if (!check_table_()) {
+                throw PriorityDBException{"Data table could not be created"};
+            }
         }
     }
 
@@ -161,7 +163,9 @@ bool PriorityDB::Impl::Full() {
 
 std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> PriorityDB::Impl::open_db_() {
     sqlite3* sqlite_db;
-    sqlite3_open(table_path_.data(), &sqlite_db);
+    if (sqlite3_open(table_path_.data(), &sqlite_db) != SQLITE_OK) {
+        throw PriorityDBException{sqlite3_errmsg(sqlite_db)};
+    }
     return std::unique_ptr<sqlite3, std::function<int(sqlite3*)>>(sqlite_db, sqlite3_close);
 }
 
