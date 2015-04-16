@@ -296,3 +296,110 @@ TEST_F(DBFixture, InsertManyTest) {
         EXPECT_EQ(i % 2, std::stoi(record["on_disk"]));
     }
 }
+
+TEST_F(DBFixture, DeleteNullTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Delete("");
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+}
+
+TEST_F(DBFixture, DeleteBadHashTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Delete("h");
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(1, response.size());
+}
+
+TEST_F(DBFixture, DeleteSingleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(1, response.size());
+    }
+    db.Delete("hash");
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+}
+
+TEST_F(DBFixture, DeleteCoupleTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    db.Insert(2, "hashbrowns", 10, true);
+    { 
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(2, response.size());
+    }
+    db.Delete("hash");
+    db.Delete("hashbrowns");
+    std::stringstream stream;
+    stream << "SELECT * FROM "
+           << table_name_
+           << ";";
+    auto response = execute_(stream.str());
+    ASSERT_EQ(0, response.size());
+}
+
+TEST_F(DBFixture, DeleteManyTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+    }
+    {
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(number_of_records, response.size());
+    }
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Delete(std::to_string(i * i));
+        std::stringstream stream;
+        stream << "SELECT * FROM "
+               << table_name_
+               << ";";
+        auto response = execute_(stream.str());
+        ASSERT_EQ(number_of_records - i - 1, response.size());
+    }
+}
