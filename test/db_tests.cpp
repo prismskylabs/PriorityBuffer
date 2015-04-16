@@ -1118,3 +1118,109 @@ TEST_F(DBFixture, FullOnDiskDeleteCoupleTest) {
     db.Delete("hashbrowns");
     EXPECT_FALSE(db.Full());
 }
+
+TEST_F(DBFixture, DeletedDBThrowInsertTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        db.Insert(1, "hash", 5, false);
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
+
+TEST_F(DBFixture, DeletedDBThrowDeleteTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        db.Delete("hash");
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
+
+TEST_F(DBFixture, DeletedDBThrowUpdateTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        db.Update("hash", true);
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
+
+TEST_F(DBFixture, DeletedDBThrowGetHighestHashTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        bool on_disk;
+        db.GetHighestHash(on_disk);
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
+
+TEST_F(DBFixture, DeletedDBThrowGetLowestMemoryHashTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        db.GetLowestMemoryHash();
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
+
+TEST_F(DBFixture, DeletedDBThrowGetLowestDiskashTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        db.GetLowestDiskHash();
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
+
+TEST_F(DBFixture, DeletedDBThrowFullTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    fs::remove(db_path_);
+    ASSERT_FALSE(fs::exists(db_path_));
+    bool thrown = false;
+    try {
+        db.Full();
+    } catch (const PriorityDBException& e) {
+        thrown = true;
+        EXPECT_EQ(std::string{"no such table: prism_data"},
+                  std::string{e.what()});
+    }
+    EXPECT_TRUE(thrown);
+}
