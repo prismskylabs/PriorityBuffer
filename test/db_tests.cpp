@@ -253,11 +253,6 @@ TEST_F(DBFixture, InsertCoupleTest) {
            << table_name_
            << ";";
     auto response = execute_(stream.str());
-    for (auto& record : response) {
-        for (auto item = record.begin(); item != record.end(); ++item) {
-            std::cout << item->first << ": " << item->second << std::endl;
-        }
-    }
     ASSERT_EQ(2, response.size());
     {
         auto record = response[0];
