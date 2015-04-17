@@ -87,6 +87,38 @@ TEST_F(FSFixture, RandomMultithreadedWithBlockingFuzzTest) {
     EXPECT_GT(end - start, std::chrono::seconds(5));
 }
 
+TEST_F(FSFixture, RandomMultithreadedWithBlockingNoFuzzTest) {
+    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    buffer.SetFuzz(0, 0);
+
+    auto start = std::chrono::system_clock::now();
+
+    std::thread pull_thread(pull_block, std::ref(buffer), 5);
+    std::thread push_thread(push, std::ref(buffer), 5);
+
+    push_thread.join();
+    pull_thread.join();
+
+    auto end = std::chrono::system_clock::now();
+    EXPECT_LT(end - start, std::chrono::seconds(5));
+}
+
+TEST_F(FSFixture, RandomMultithreadedWithBlockingBadFuzzTest) {
+    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    buffer.SetFuzz(1000, 100);
+
+    auto start = std::chrono::system_clock::now();
+
+    std::thread pull_thread(pull_block, std::ref(buffer), 5);
+    std::thread push_thread(push, std::ref(buffer), 5);
+
+    push_thread.join();
+    pull_thread.join();
+
+    auto end = std::chrono::system_clock::now();
+    EXPECT_LT(end - start, std::chrono::seconds(5));
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     GOOGLE_PROTOBUF_VERIFY_VERSION;
