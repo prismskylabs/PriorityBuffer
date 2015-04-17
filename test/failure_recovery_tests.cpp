@@ -1,17 +1,14 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <fstream>
-#include <map>
 #include <memory>
 #include <random>
 #include <string>
 #include <vector>
 
 #include <boost/filesystem.hpp>
-#include <sqlite3.h>
 
-#include "bufferfixture.h"
+#include "dbfixture.h"
 #include "priority.pb.h"
 #include "prioritybuffer.h"
 
@@ -26,71 +23,15 @@ unsigned long long get_priority(const PriorityMessage& message) {
     return message.priority();
 }
 
-class FailureFixture : public BufferFixture {
+class FailureFixture : public DBFixture {
   protected:
-    typedef std::map<std::string, std::string> Record;
-
     virtual void SetUp() {
-        BufferFixture::SetUp();
-        buffer_path_ = fs::temp_directory_path() / fs::path{"prism_buffer"};
-        fs::create_directory(buffer_path_);
-        db_path_ = fs::temp_directory_path() / fs::path{"prism_buffer"} / fs::path{"prism_data.db"};
-        db_string_ = db_path_.native();
-        table_name_ = "prism_data";
+        DBFixture::SetUp();
         {
             // Create the db so there's a table we can use
             PriorityDB db{DEFAULT_MAX_BUFFER_SIZE, db_string_};
         }
     }
-
-    virtual void TearDown() {
-        BufferFixture::TearDown();
-    }
-
-    sqlite3* open_db_() {
-        sqlite3* sqlite_db;
-        if (sqlite3_open(db_string_.data(), &sqlite_db) != SQLITE_OK) {
-            throw PriorityDBException{sqlite3_errmsg(sqlite_db)};
-        }
-        return sqlite_db;
-    }
-
-    int close_db_(sqlite3* db) {
-        return sqlite3_close(db);
-    }
-
-    static int callback_(void* response_ptr, int num_values, char** values, char** names) {
-        auto response = (std::vector<Record>*) response_ptr;
-        auto record = Record();
-        for (int i = 0; i < num_values; ++i) {
-            if (values[i]) {
-                record[names[i]] = values[i];
-            }
-        }
-
-        response->push_back(record);
-
-        return 0;
-    }
-
-    std::vector<Record> execute_(const std::string& sql) {
-        std::vector<Record> response;
-        auto db = open_db_();
-        char* error;
-        int rc = sqlite3_exec(db, sql.data(), &callback_, &response, &error);
-        if (rc != SQLITE_OK) {
-            auto error_string = std::string{error};
-            sqlite3_free(error);
-            throw PriorityDBException{error_string};
-        }
-
-        return response;
-    }
-
-    fs::path db_path_;
-    fs::path buffer_path_;
-    std::string db_string_;
-    std::string table_name_;
 };
 
 TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
@@ -108,13 +49,7 @@ TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
     unsigned long long number_to_delete = 0;
     unsigned long long number_of_files = 0;
     {
-        fs::directory_iterator begin(buffer_path_), end;
-        number_of_files = std::count_if(begin, end,
-                [] (const fs::directory_entry& f) {
-                    return !(fs::is_directory(f.path()) ||
-                             f.path().filename().native().substr(0, 10) == "prism_data");
-                });
-
+        number_of_files = number_of_files_();
         std::uniform_int_distribution<unsigned long long> random_delete(1, number_of_files);
         number_to_delete = random_delete(generator);
     }
@@ -136,13 +71,7 @@ TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
         ASSERT_TRUE(fs::remove(buffer_path_ / fs::path{hash}));
     }
     {
-        fs::directory_iterator begin(buffer_path_), end;
-        auto new_number_of_files = std::count_if(begin, end,
-                [] (const fs::directory_entry& f) {
-                    return !(fs::is_directory(f.path()) ||
-                             f.path().filename().native().substr(0, 10) == "prism_data");
-                });
-        ASSERT_EQ(number_of_files - number_to_delete, new_number_of_files);
+        ASSERT_EQ(number_of_files - number_to_delete, number_of_files_());
     }
 
     unsigned long long priority = 100LL;
@@ -159,7 +88,11 @@ TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
 
     // There should be no more initialized messages, so every subsequent Pop should be bad
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        EXPECT_EQ(nullptr, buffer.Pop());
+        auto message = buffer.Pop();
+        if (!message) {
+            break;
+        }
+        std::cout << "i: " << message.get() << std::endl;
     }
 }
 
@@ -219,7 +152,7 @@ TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
     {
         PriorityBuffer<PriorityMessage> buffer{get_priority};
         
-        // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 0 priority
+        // Push DEFAULT_MAX_MEMORY_SIZE messages into the buffer with 0 priority
         for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
             auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
             message->set_priority(0);
@@ -244,14 +177,7 @@ TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
     }
 
     // Let the buffer drop and try to push memory messages to disk
-    fs::directory_iterator begin(buffer_path_), end;
-    int number_of_files = std::count_if(begin, end,
-            [] (const fs::directory_entry& f) {
-                return !(fs::is_directory(f.path()) ||
-                         f.path().filename().native().substr(0, 10) == "prism_data");
-            });
-
-    EXPECT_EQ(DEFAULT_MAX_MEMORY_SIZE - number_to_create, number_of_files);
+    EXPECT_EQ(DEFAULT_MAX_MEMORY_SIZE - number_to_create, number_of_files_());
 }
 
 int main(int argc, char** argv) {

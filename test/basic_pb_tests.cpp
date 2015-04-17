@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "basic.pb.h"
-#include "bufferfixture.h"
+#include "fsfixture.h"
 #include "prioritybuffer.h"
 
 #ifndef NUMBER_MESSAGES_IN_TEST
@@ -15,7 +15,7 @@
 #endif
 
 
-TEST_F(BufferFixture, DefaultPriorityTest) {
+TEST_F(FSFixture, DefaultPriorityTest) {
     PriorityBuffer<Basic> basics;
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
@@ -36,7 +36,7 @@ unsigned long long reverse_priority(const Basic& basic) {
     return 20000000000000000LL - std::chrono::steady_clock::now().time_since_epoch().count();
 }
 
-TEST_F(BufferFixture, ReversePriorityTest) {
+TEST_F(FSFixture, ReversePriorityTest) {
     PriorityBuffer<Basic> basics{reverse_priority};
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
@@ -53,7 +53,7 @@ TEST_F(BufferFixture, ReversePriorityTest) {
     }
 }
 
-TEST_F(BufferFixture, OutOfOrderTest) {
+TEST_F(FSFixture, OutOfOrderTest) {
     std::vector<unsigned long long> ordered_priorities{5, 3, 7, 1, 8, 2};
     int priority_at = 0;
 

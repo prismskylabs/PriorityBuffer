@@ -1,15 +1,12 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
-#include <chrono>
 #include <memory>
 #include <random>
 #include <string>
-#include <thread>
 
 #include <boost/filesystem.hpp>
 
-#include "bufferfixture.h"
+#include "fsfixture.h"
 #include "priority.pb.h"
 #include "prioritybuffer.h"
 
@@ -24,7 +21,7 @@ unsigned long long get_priority(const PriorityMessage& message) {
     return message.priority();
 }
 
-TEST_F(BufferFixture, RandomPriorityTest) {
+TEST_F(FSFixture, RandomPriorityTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
@@ -45,7 +42,7 @@ TEST_F(BufferFixture, RandomPriorityTest) {
     }
 }
 
-TEST_F(BufferFixture, MaxSizePriorityTest) {
+TEST_F(FSFixture, MaxSizePriorityTest) {
     // Each message takes 2 bytes to store. At NUMBER_MESSAGES_IN_TEST max byte size, we can store
     // half of all messages on disk, and DEFAULT_MAX_MEMORY_SIZE messages in memory, for a total of
     // NUMBER_MESSAGES_IN_TEST / 2 + DEFAULT_MAX_MEMORY_SIZE.
@@ -73,7 +70,7 @@ TEST_F(BufferFixture, MaxSizePriorityTest) {
     EXPECT_EQ(nullptr, buffer.Pop());
 }
 
-TEST_F(BufferFixture, NoMemoryPriorityTest) {
+TEST_F(FSFixture, NoMemoryPriorityTest) {
     // Each message takes 2 bytes to store. At NUMBER_MESSAGES_IN_TEST max byte size, we can store
     // half of all messages on disk, and 0 messages in memory, for a total of
     // NUMBER_MESSAGES_IN_TEST / 2.
@@ -99,7 +96,7 @@ TEST_F(BufferFixture, NoMemoryPriorityTest) {
     EXPECT_EQ(nullptr, buffer.Pop());
 }
 
-TEST_F(BufferFixture, DiskDumpAllPriorityTest) {
+TEST_F(FSFixture, DiskDumpAllPriorityTest) {
     auto buffer_path = fs::temp_directory_path() / fs::path{"prism_buffer"};
     {
         // On destruction, PriorityBuffer will convert all in-memory objects to file objects
@@ -116,27 +113,13 @@ TEST_F(BufferFixture, DiskDumpAllPriorityTest) {
         }
         // Since there are DEFAULT_MAX_MEMORY_SIZE in memory, there should be
         // NUMBER_MESSAGES_IN_TEST - DEFAULT_MAX_MEMORY_SIZE files in the default buffer directory.
-        
-        fs::directory_iterator begin(buffer_path), end;
-        int number_of_files = std::count_if(begin, end,
-                [] (const fs::directory_entry& f) {
-                    return !(fs::is_directory(f.path()) ||
-                             f.path().filename().native().substr(0, 10) == "prism_data");
-                });
-
-        EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST - DEFAULT_MAX_MEMORY_SIZE);
+        EXPECT_EQ(number_of_files_(), NUMBER_MESSAGES_IN_TEST - DEFAULT_MAX_MEMORY_SIZE);
     }
 
-    fs::directory_iterator begin(buffer_path), end;
-    int number_of_files = std::count_if(begin, end,
-            [] (const fs::directory_entry& f) {
-                return !(fs::is_directory(f.path()) ||
-                         f.path().filename().native().substr(0, 10) == "prism_data");
-            });
-    EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST);
+    EXPECT_EQ(number_of_files_(), NUMBER_MESSAGES_IN_TEST);
 }
 
-TEST_F(BufferFixture, DiskDumpSomePriorityTest) {
+TEST_F(FSFixture, DiskDumpSomePriorityTest) {
     // Pop off some random number of messages
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
@@ -159,25 +142,12 @@ TEST_F(BufferFixture, DiskDumpSomePriorityTest) {
             EXPECT_GE(priority, message->priority());
             priority = message->priority();
         }
-        fs::directory_iterator begin(buffer_path), end;
-        int number_of_files = std::count_if(begin, end,
-                [] (const fs::directory_entry& f) {
-                    return !(fs::is_directory(f.path()) ||
-                             f.path().filename().native().substr(0, 10) == "prism_data");
-                });
-
         auto disk_popped = DEFAULT_MAX_MEMORY_SIZE > number_of_popped ?
                            DEFAULT_MAX_MEMORY_SIZE : number_of_popped;
-        EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST - disk_popped);
+        EXPECT_EQ(number_of_files_(), NUMBER_MESSAGES_IN_TEST - disk_popped);
     }
 
-    fs::directory_iterator begin(buffer_path), end;
-    int number_of_files = std::count_if(begin, end,
-            [] (const fs::directory_entry& f) {
-                return !(fs::is_directory(f.path()) ||
-                         f.path().filename().native().substr(0, 10) == "prism_data");
-            });
-    EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST - number_of_popped);
+    EXPECT_EQ(number_of_files_(), NUMBER_MESSAGES_IN_TEST - number_of_popped);
 }
 
 int main(int argc, char** argv) {

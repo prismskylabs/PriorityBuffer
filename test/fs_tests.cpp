@@ -6,32 +6,9 @@
 
 #include <boost/filesystem.hpp>
 
+#include "fsfixture.h"
 #include "priorityfs.h"
 
-
-namespace fs = boost::filesystem;
-
-class FSFixture : public ::testing::Test {
-  protected:
-    virtual void SetUp() {
-        buffer_path_ = fs::temp_directory_path() / fs::path{"prism_buffer"};
-        fs::remove_all(buffer_path_);
-    }
-
-    virtual void TearDown() {
-        fs::remove_all(buffer_path_);
-    }
-
-    int number_of_files(const fs::path& path) {
-        fs::directory_iterator begin(path), end;
-        return std::count_if(begin, end,
-                [] (const fs::directory_entry& f) {
-                    return !fs::is_directory(f.path());
-                });
-    }
-
-    fs::path buffer_path_;
-};
 
 TEST_F(FSFixture, EmptyFSTest) {
     EXPECT_FALSE(fs::exists(buffer_path_));
@@ -103,7 +80,7 @@ TEST_F(FSFixture, ConstructParentThrowTest) {
 TEST_F(FSFixture, InitialEmptyFSTest) {
     PriorityFS priority_fs{"prism_buffer"};
     EXPECT_TRUE(fs::exists(buffer_path_));
-    EXPECT_EQ(0, number_of_files(buffer_path_));
+    EXPECT_EQ(0, number_of_files_());
 }
 
 TEST_F(FSFixture, GetFilePathTest) {

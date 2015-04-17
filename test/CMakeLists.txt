@@ -8,7 +8,6 @@ PROTOBUF_GENERATE_CPP(BASIC_PROTO_SRCS BASIC_PROTO_HDRS basic.proto)
 
 add_executable(basic_pb_tests
     basic_pb_tests.cpp
-    bufferfixture.h
     ${BASIC_PROTO_SRCS} ${BASIC_PROTO_HDRS})
 
 target_include_directories(basic_pb_tests PRIVATE
@@ -29,7 +28,6 @@ add_test(NAME basic_pb_tests COMMAND basic_pb_tests)
 PROTOBUF_GENERATE_CPP(PRIORITY_PROTO_SRCS PRIORITY_PROTO_HDRS priority.proto)
 
 add_executable(priority_pb_tests
-    bufferfixture.h
     priority_pb_tests.cpp
     ${PRIORITY_PROTO_SRCS} ${PRIORITY_PROTO_HDRS})
 
@@ -50,7 +48,6 @@ add_test(NAME priority_pb_tests COMMAND priority_pb_tests)
 
 add_executable(failure_recovery_tests
     failure_recovery_tests.cpp
-    bufferfixture.h
     ${PRIORITY_PROTO_SRCS} ${PRIORITY_PROTO_HDRS})
 
 target_include_directories(failure_recovery_tests PRIVATE
@@ -70,7 +67,6 @@ add_test(NAME failure_recovery_tests COMMAND failure_recovery_tests)
 
 add_executable(multithread_tests
     multithread_tests.cpp
-    bufferfixture.h
     ${PRIORITY_PROTO_SRCS} ${PRIORITY_PROTO_HDRS})
 
 target_include_directories(multithread_tests PRIVATE

@@ -5,7 +5,7 @@
 #include <random>
 #include <thread>
 
-#include "bufferfixture.h"
+#include "fsfixture.h"
 #include "priority.pb.h"
 #include "prioritybuffer.h"
 
@@ -51,7 +51,7 @@ void pull_block(PriorityBuffer<PriorityMessage>& buffer) {
     EXPECT_EQ(nullptr, buffer.Pop());
 }
 
-TEST_F(BufferFixture, RandomMultithreadedTestTest) {
+TEST_F(FSFixture, RandomMultithreadedTestTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread push_thread(push, std::ref(buffer));
@@ -61,7 +61,7 @@ TEST_F(BufferFixture, RandomMultithreadedTestTest) {
     pull_thread.join();
 }
 
-TEST_F(BufferFixture, RandomMultithreadedWithBlockingTestTest) {
+TEST_F(FSFixture, RandomMultithreadedWithBlockingTestTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread pull_thread(pull_block, std::ref(buffer));
