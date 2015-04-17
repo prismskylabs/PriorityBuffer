@@ -68,6 +68,26 @@ target_link_libraries(failure_recovery_tests
 
 add_test(NAME failure_recovery_tests COMMAND failure_recovery_tests)
 
+add_executable(multithread_tests
+    multithread_tests.cpp
+    bufferfixture.h
+    ${PRIORITY_PROTO_SRCS} ${PRIORITY_PROTO_HDRS})
+
+target_include_directories(multithread_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${PRIORITYBUFFER_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
+    ${PROTOBUF_INCLUDE_DIRS}
+    ${BOOSTFILESYSTEM_INCLUDE_DIRS})
+
+target_link_libraries(multithread_tests
+    ${GTEST_LIBRARIES}
+    ${PRIORITYBUFFER_LIBRARIES}
+    ${PROTOBUF_LIBRARIES})
+
+add_test(NAME multithread_tests COMMAND multithread_tests)
+
 add_executable(fs_tests
     fs_tests.cpp)
 
