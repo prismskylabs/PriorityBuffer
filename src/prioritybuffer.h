@@ -68,11 +68,14 @@ class PriorityBuffer {
         auto size = get_size_(*t_ptr);
         db_.Insert(make_priority_(*t_ptr), hash, size);
 
-        if (objects_.size() > max_memory_) {
+        while (objects_.size() > max_memory_) {
             auto lowest_hash = db_.GetLowestMemoryHash();
-            auto& object = objects_[lowest_hash];
-            save_to_disk(*(object.get()), lowest_hash);
-            objects_.erase(lowest_hash);
+            auto find = objects_.find(lowest_hash);
+            if (find != objects_.end()) {
+                auto object = std::move(find->second);
+                save_to_disk(*(object.get()), lowest_hash);
+                objects_.erase(lowest_hash);
+            }
         }
 
         while (db_.Full()) {
