@@ -51,7 +51,7 @@ void pull_block(PriorityBuffer<PriorityMessage>& buffer) {
     EXPECT_EQ(nullptr, buffer.Pop());
 }
 
-TEST_F(FSFixture, RandomMultithreadedTestTest) {
+TEST_F(FSFixture, RandomMultithreadedTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread push_thread(push, std::ref(buffer));
@@ -61,7 +61,7 @@ TEST_F(FSFixture, RandomMultithreadedTestTest) {
     pull_thread.join();
 }
 
-TEST_F(FSFixture, RandomMultithreadedWithBlockingTestTest) {
+TEST_F(FSFixture, RandomMultithreadedWithBlockingTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread pull_thread(pull_block, std::ref(buffer));
