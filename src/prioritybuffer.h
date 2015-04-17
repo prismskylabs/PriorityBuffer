@@ -9,8 +9,10 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <random>
 #include <sstream>
 #include <string>
+#include <thread>
 
 #include "prioritydb.h"
 #include "priorityfs.h"
@@ -27,14 +29,16 @@ class PriorityBuffer {
     PriorityBuffer()
             : make_priority_{epoch_priority_}, fs_{"prism_buffer", std::string{}},
               db_{DEFAULT_MAX_BUFFER_SIZE, fs_.GetFilePath("prism_data.db")},
-              max_memory_{DEFAULT_MAX_MEMORY_SIZE} {
+              max_memory_{DEFAULT_MAX_MEMORY_SIZE}, fuzz_lower_ms_{0}, fuzz_upper_ms_{0},
+              fuzzer_{fuzz_lower_ms_, fuzz_upper_ms_} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
     PriorityBuffer(PriorityFunction make_priority)
             : make_priority_{make_priority}, fs_{"prism_buffer", std::string{}},
               db_{DEFAULT_MAX_BUFFER_SIZE, fs_.GetFilePath("prism_data.db")},
-              max_memory_{DEFAULT_MAX_MEMORY_SIZE} {
+              max_memory_{DEFAULT_MAX_MEMORY_SIZE}, fuzz_lower_ms_{0}, fuzz_upper_ms_{0},
+              fuzzer_{fuzz_lower_ms_, fuzz_upper_ms_} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
@@ -42,7 +46,8 @@ class PriorityBuffer {
                    const int& max_memory)
             : make_priority_{make_priority}, fs_{"prism_buffer", std::string{}},
               db_{buffer_size, fs_.GetFilePath("prism_data.db")},
-              max_memory_{max_memory} {
+              max_memory_{max_memory}, fuzz_lower_ms_{0}, fuzz_upper_ms_{0},
+              fuzzer_{fuzz_lower_ms_, fuzz_upper_ms_} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
@@ -51,6 +56,13 @@ class PriorityBuffer {
             auto hash = object->first;
             save_to_disk(*(object->second.get()), hash);
         }
+    }
+
+    void SetFuzz(const unsigned long& fuzz_lower_ms, const unsigned long& fuzz_upper_ms) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        fuzz_lower_ms_ = fuzz_lower_ms;
+        fuzz_upper_ms_ = fuzz_upper_ms;
+        fuzzer_ = std::uniform_int_distribution<unsigned long>{fuzz_lower_ms_, fuzz_upper_ms_};
     }
 
     void Push(std::unique_ptr<T> t) {
@@ -78,29 +90,37 @@ class PriorityBuffer {
     }
 
     std::unique_ptr<T> Pop(bool block=false) {
-        std::unique_lock<std::mutex> lock(mutex_);
-        bool on_disk;
-        auto hash = db_.GetHighestHash(on_disk);
-        if (block) {
-            while (hash.empty()) {
-                condition_.wait(lock);
-                hash = db_.GetHighestHash(on_disk);
+        std::unique_ptr<T> object = nullptr;
+
+        {
+            std::unique_lock<std::mutex> lock(mutex_);
+            bool on_disk;
+            auto hash = db_.GetHighestHash(on_disk);
+            if (block) {
+                while (hash.empty()) {
+                    condition_.wait(lock);
+                    hash = db_.GetHighestHash(on_disk);
+                }
+            }
+
+            db_.Delete(hash);
+
+            if (!on_disk) {
+                auto find = objects_.find(hash);
+                if (find != objects_.end()) {
+                    object = std::move(find->second);
+                    objects_.erase(hash);
+                }
+            } else {
+                object = std::move(inflate(hash));
             }
         }
 
-        db_.Delete(hash);
-
-        if (!on_disk) {
-            auto find = objects_.find(hash);
-            if (find != objects_.end()) {
-                auto object = std::move(find->second);
-                objects_.erase(hash);
-                return object;
-            }
-            return nullptr;
-        } else {
-            return inflate(hash);
+        if (block && fuzz_upper_ms_ > 0 && fuzz_lower_ms_ <= fuzz_upper_ms_) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(fuzzer_(generator_)));
         }
+
+        return object;
     }
 
   private:
@@ -158,6 +178,10 @@ class PriorityBuffer {
     std::mutex mutex_;
     std::condition_variable condition_;
     int max_memory_;
+    unsigned long fuzz_lower_ms_;
+    unsigned long fuzz_upper_ms_;
+    std::random_device generator_;
+    std::uniform_int_distribution<unsigned long> fuzzer_;
 };
 
 #endif
