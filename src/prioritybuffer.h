@@ -29,25 +29,22 @@ class PriorityBuffer {
     PriorityBuffer()
             : make_priority_{epoch_priority_}, fs_{"prism_buffer", std::string{}},
               db_{DEFAULT_MAX_BUFFER_SIZE, fs_.GetFilePath("prism_data.db")},
-              max_memory_{DEFAULT_MAX_MEMORY_SIZE}, fuzz_lower_ms_{0}, fuzz_upper_ms_{0},
-              fuzzer_{fuzz_lower_ms_, fuzz_upper_ms_} {
+              max_memory_{DEFAULT_MAX_MEMORY_SIZE}, fuzzer_{0, 0} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
     PriorityBuffer(PriorityFunction make_priority)
             : make_priority_{make_priority}, fs_{"prism_buffer", std::string{}},
               db_{DEFAULT_MAX_BUFFER_SIZE, fs_.GetFilePath("prism_data.db")},
-              max_memory_{DEFAULT_MAX_MEMORY_SIZE}, fuzz_lower_ms_{0}, fuzz_upper_ms_{0},
-              fuzzer_{fuzz_lower_ms_, fuzz_upper_ms_} {
+              max_memory_{DEFAULT_MAX_MEMORY_SIZE}, fuzzer_{0, 0} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
     PriorityBuffer(PriorityFunction make_priority, const unsigned long long& buffer_size,
                    const int& max_memory)
             : make_priority_{make_priority}, fs_{"prism_buffer", std::string{}},
-              db_{buffer_size, fs_.GetFilePath("prism_data.db")},
-              max_memory_{max_memory}, fuzz_lower_ms_{0}, fuzz_upper_ms_{0},
-              fuzzer_{fuzz_lower_ms_, fuzz_upper_ms_} {
+              db_{buffer_size, fs_.GetFilePath("prism_data.db")}, max_memory_{max_memory}, 
+              fuzzer_{0, 0} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
@@ -60,9 +57,7 @@ class PriorityBuffer {
 
     void SetFuzz(const unsigned long& fuzz_lower_ms, const unsigned long& fuzz_upper_ms) {
         std::lock_guard<std::mutex> lock(mutex_);
-        fuzz_lower_ms_ = fuzz_lower_ms;
-        fuzz_upper_ms_ = fuzz_upper_ms;
-        fuzzer_ = std::uniform_int_distribution<unsigned long>{fuzz_lower_ms_, fuzz_upper_ms_};
+        fuzzer_ = std::uniform_int_distribution<unsigned long>{fuzz_lower_ms, fuzz_upper_ms};
     }
 
     void Push(std::unique_ptr<T> t) {
@@ -116,7 +111,7 @@ class PriorityBuffer {
             }
         }
 
-        if (block && fuzz_upper_ms_ > 0 && fuzz_lower_ms_ <= fuzz_upper_ms_) {
+        if (block && fuzzer_.b() > 0 && fuzzer_.a() <= fuzzer_.b()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(fuzzer_(generator_)));
         }
 
@@ -178,8 +173,6 @@ class PriorityBuffer {
     std::mutex mutex_;
     std::condition_variable condition_;
     int max_memory_;
-    unsigned long fuzz_lower_ms_;
-    unsigned long fuzz_upper_ms_;
     std::random_device generator_;
     std::uniform_int_distribution<unsigned long> fuzzer_;
 };
