@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <memory>
 #include <random>
 #include <string>
 #include <thread>
@@ -28,19 +29,19 @@ TEST_F(BufferFixture, RandomPriorityTest) {
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        PriorityMessage message;
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
         auto priority = distribution(generator);
-        message.set_priority(priority);
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_EQ(priority, message.priority());
-        buffer.Push(message);
+        message->set_priority(priority);
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_EQ(priority, message->priority());
+        buffer.Push(std::move(message));
     }
     unsigned long long priority = 100LL;
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto message = buffer.Pop();
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_GE(priority, message.priority());
-        priority = message.priority();
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_GE(priority, message->priority());
+        priority = message->priority();
     }
 }
 
@@ -53,25 +54,23 @@ TEST_F(BufferFixture, MaxSizePriorityTest) {
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        PriorityMessage message;
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
         auto priority = distribution(generator);
-        message.set_priority(priority);
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_EQ(priority, message.priority());
-        buffer.Push(message);
+        message->set_priority(priority);
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_EQ(priority, message->priority());
+        buffer.Push(std::move(message));
     }
     unsigned long long priority = 100LL;
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST / 2 + DEFAULT_MAX_MEMORY_SIZE; ++i) {
         auto message = buffer.Pop();
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_GE(priority, message.priority());
-        priority = message.priority();
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_GE(priority, message->priority());
+        priority = message->priority();
     }
 
     // One more attempt should give us a message that is uninitialized.
-    auto message = buffer.Pop();
-    EXPECT_FALSE(message.IsInitialized());
-    EXPECT_GE(priority, message.priority());
+    EXPECT_EQ(nullptr, buffer.Pop());
 }
 
 TEST_F(BufferFixture, NoMemoryPriorityTest) {
@@ -82,25 +81,22 @@ TEST_F(BufferFixture, NoMemoryPriorityTest) {
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        PriorityMessage message;
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
         auto priority = distribution(generator);
-        message.set_priority(priority);
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_EQ(priority, message.priority());
-        buffer.Push(message);
+        message->set_priority(priority);
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_EQ(priority, message->priority());
+        buffer.Push(std::move(message));
     }
     unsigned long long priority = 100LL;
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST / 2; ++i) {
         auto message = buffer.Pop();
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_GE(priority, message.priority());
-        priority = message.priority();
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_GE(priority, message->priority());
+        priority = message->priority();
     }
 
-    // One more attempt should give us a message that is uninitialized.
-    auto message = buffer.Pop();
-    EXPECT_FALSE(message.IsInitialized());
-    EXPECT_GE(priority, message.priority());
+    EXPECT_EQ(nullptr, buffer.Pop());
 }
 
 TEST_F(BufferFixture, DiskDumpAllPriorityTest) {
@@ -111,12 +107,12 @@ TEST_F(BufferFixture, DiskDumpAllPriorityTest) {
         std::random_device generator;
         std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
         for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-            PriorityMessage message;
+            auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
             auto priority = distribution(generator);
-            message.set_priority(priority);
-            EXPECT_TRUE(message.IsInitialized());
-            EXPECT_EQ(priority, message.priority());
-            buffer.Push(message);
+            message->set_priority(priority);
+            EXPECT_TRUE(message->IsInitialized());
+            EXPECT_EQ(priority, message->priority());
+            buffer.Push(std::move(message));
         }
         // Since there are DEFAULT_MAX_MEMORY_SIZE in memory, there should be
         // NUMBER_MESSAGES_IN_TEST - DEFAULT_MAX_MEMORY_SIZE files in the default buffer directory.
@@ -149,19 +145,19 @@ TEST_F(BufferFixture, DiskDumpSomePriorityTest) {
     {
         PriorityBuffer<PriorityMessage> buffer{get_priority};
         for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-            PriorityMessage message;
+            auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
             auto priority = distribution(generator);
-            message.set_priority(priority);
-            EXPECT_TRUE(message.IsInitialized());
-            EXPECT_EQ(priority, message.priority());
-            buffer.Push(message);
+            message->set_priority(priority);
+            EXPECT_TRUE(message->IsInitialized());
+            EXPECT_EQ(priority, message->priority());
+            buffer.Push(std::move(message));
         }
         unsigned long long priority = 100LL;
         for (int i = 0; i < number_of_popped; ++i) {
             auto message = buffer.Pop();
-            EXPECT_TRUE(message.IsInitialized());
-            EXPECT_GE(priority, message.priority());
-            priority = message.priority();
+            EXPECT_TRUE(message->IsInitialized());
+            EXPECT_GE(priority, message->priority());
+            priority = message->priority();
         }
         fs::directory_iterator begin(buffer_path), end;
         int number_of_files = std::count_if(begin, end,

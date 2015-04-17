@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <memory>
 #include <random>
 #include <thread>
 
@@ -23,32 +24,31 @@ void push(PriorityBuffer<PriorityMessage>& buffer) {
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        PriorityMessage message;
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
         auto priority = distribution(generator);
-        message.set_priority(priority);
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_EQ(priority, message.priority());
-        buffer.Push(message);
+        message->set_priority(priority);
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_EQ(priority, message->priority());
+        buffer.Push(std::move(message));
     }
 }
 
 void pull(PriorityBuffer<PriorityMessage>& buffer) {
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ) {
-        auto message = buffer.Pop();
-        if (message.IsInitialized()) {
+        if (buffer.Pop()) {
             ++i;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    EXPECT_FALSE(buffer.Pop().IsInitialized());
+    EXPECT_EQ(nullptr, buffer.Pop());
 }
 
 void pull_block(PriorityBuffer<PriorityMessage>& buffer) {
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto message = buffer.Pop(true);
-        EXPECT_TRUE(message.IsInitialized());
+        EXPECT_TRUE(message->IsInitialized());
     }
-    EXPECT_FALSE(buffer.Pop().IsInitialized());
+    EXPECT_EQ(nullptr, buffer.Pop());
 }
 
 TEST_F(BufferFixture, RandomMultithreadedTestTest) {

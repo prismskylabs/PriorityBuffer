@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <random>
 #include <string>
 #include <vector>
@@ -97,12 +98,12 @@ TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        PriorityMessage message;
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
         auto priority = distribution(generator);
-        message.set_priority(priority);
-        EXPECT_TRUE(message.IsInitialized());
-        EXPECT_EQ(priority, message.priority());
-        buffer.Push(message);
+        message->set_priority(priority);
+        EXPECT_TRUE(message->IsInitialized());
+        EXPECT_EQ(priority, message->priority());
+        buffer.Push(std::move(message));
     }
     unsigned long long number_to_delete = 0;
     unsigned long long number_of_files = 0;
@@ -148,29 +149,29 @@ TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
     for (int i = 0; i < (NUMBER_MESSAGES_IN_TEST - number_to_delete); ) {
         auto message = buffer.Pop();
         // Check if the message has been deleted or not
-        if (message.IsInitialized()) {
+        if (message) {
             // If it is, add it to i
-            EXPECT_GE(priority, message.priority());
+            EXPECT_GE(priority, message->priority());
             ++i;
-            priority = message.priority();
+            priority = message->priority();
         }
     }
 
     // There should be no more initialized messages, so every subsequent Pop should be bad
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        EXPECT_FALSE(buffer.Pop().IsInitialized());
+        EXPECT_EQ(nullptr, buffer.Pop());
     }
 }
 
 TEST_F(FailureFixture, ExistingDiskMessageTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
     
-    // Push 50 messages into he buffer with 0 priority
-    for (int i = 0; i < 50; ++i) {
-        PriorityMessage message;
-        message.set_priority(0);
-        ASSERT_TRUE(message.IsInitialized());
-        buffer.Push(message);
+    // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 0 priority
+    for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
+        message->set_priority(0);
+        ASSERT_TRUE(message->IsInitialized());
+        buffer.Push(std::move(message));
     }
 
     std::random_device generator;
@@ -192,22 +193,22 @@ TEST_F(FailureFixture, ExistingDiskMessageTest) {
         file_out << "hello world";
     }
 
-        PriorityMessage message;
-        message.set_priority(1);
-        ASSERT_TRUE(message.IsInitialized());
-        buffer.Push(message);
     // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 1 priority, pushing all the
     // previous messages out
     for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
+        auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
+        message->set_priority(1);
+        ASSERT_TRUE(message->IsInitialized());
+        buffer.Push(std::move(message));
     }
 
     for (int i = 0; i < 100 - number_to_create; ++i) {
         auto message = buffer.Pop();
-        ASSERT_TRUE(message.IsInitialized());
-        ASSERT_GE(1, message.priority());
+        ASSERT_TRUE(message->IsInitialized());
+        ASSERT_GE(1, message->priority());
     }
 
-    EXPECT_FALSE(buffer.Pop().IsInitialized());
+    EXPECT_EQ(nullptr, buffer.Pop());
 }
 
 TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
@@ -218,12 +219,12 @@ TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
     {
         PriorityBuffer<PriorityMessage> buffer{get_priority};
         
-            PriorityMessage message;
-            message.set_priority(0);
-            ASSERT_TRUE(message.IsInitialized());
-            buffer.Push(message);
         // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 0 priority
         for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
+            auto message = std::unique_ptr<PriorityMessage>{ new PriorityMessage{} };
+            message->set_priority(0);
+            ASSERT_TRUE(message->IsInitialized());
+            buffer.Push(std::move(message));
         }
 
         std::stringstream stream;

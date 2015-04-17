@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -17,17 +18,17 @@
 TEST_F(BufferFixture, DefaultPriorityTest) {
     PriorityBuffer<Basic> basics;
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        Basic basic;
-        basic.set_value(std::to_string(i));
-        EXPECT_EQ(std::to_string(i), basic.value());
-        EXPECT_TRUE(basic.IsInitialized());
-        basics.Push(basic);
+        auto basic = std::unique_ptr<Basic>{ new Basic{} };
+        basic->set_value(std::to_string(i));
+        EXPECT_EQ(std::to_string(i), basic->value());
+        EXPECT_TRUE(basic->IsInitialized());
+        basics.Push(std::move(basic));
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
     for (int i = NUMBER_MESSAGES_IN_TEST - 1; i >= 0; --i) {
         auto basic = basics.Pop();
-        EXPECT_TRUE(basic.IsInitialized());
-        EXPECT_EQ(std::to_string(i), basic.value());
+        EXPECT_TRUE(basic->IsInitialized());
+        EXPECT_EQ(std::to_string(i), basic->value());
     }
 }
 
@@ -38,17 +39,17 @@ unsigned long long reverse_priority(const Basic& basic) {
 TEST_F(BufferFixture, ReversePriorityTest) {
     PriorityBuffer<Basic> basics{reverse_priority};
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
-        Basic basic;
-        basic.set_value(std::to_string(i));
-        EXPECT_TRUE(basic.IsInitialized());
-        EXPECT_EQ(std::to_string(i), basic.value());
-        basics.Push(basic);
+        auto basic = std::unique_ptr<Basic>{ new Basic{} };
+        basic->set_value(std::to_string(i));
+        EXPECT_TRUE(basic->IsInitialized());
+        EXPECT_EQ(std::to_string(i), basic->value());
+        basics.Push(std::move(basic));
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto basic = basics.Pop();
-        EXPECT_TRUE(basic.IsInitialized());
-        EXPECT_EQ(std::to_string(i), basic.value());
+        EXPECT_TRUE(basic->IsInitialized());
+        EXPECT_EQ(std::to_string(i), basic->value());
     }
 }
 
@@ -63,18 +64,18 @@ TEST_F(BufferFixture, OutOfOrderTest) {
 
     PriorityBuffer<Basic> basics{ordered_priority};
     for (auto& priority : ordered_priorities) {
-        Basic basic;
-        basic.set_value(std::to_string(priority));
-        EXPECT_TRUE(basic.IsInitialized());
-        EXPECT_EQ(std::to_string(priority), basic.value());
-        basics.Push(basic);
+        auto basic = std::unique_ptr<Basic>{ new Basic{} };
+        basic->set_value(std::to_string(priority));
+        EXPECT_TRUE(basic->IsInitialized());
+        EXPECT_EQ(std::to_string(priority), basic->value());
+        basics.Push(std::move(basic));
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
     }
     std::sort(ordered_priorities.rbegin(), ordered_priorities.rend());
     for (auto& priority : ordered_priorities) {
         auto basic = basics.Pop();
-        EXPECT_TRUE(basic.IsInitialized());
-        EXPECT_EQ(std::to_string(priority), basic.value());
+        EXPECT_TRUE(basic->IsInitialized());
+        EXPECT_EQ(std::to_string(priority), basic->value());
     }
 }
 
