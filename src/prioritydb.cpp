@@ -202,7 +202,7 @@ void PriorityDB::Impl::create_table_() {
     execute_(stream.str());
 }
 
-std::vector<PriorityDB::Impl::Record>PriorityDB::Impl::execute_(const std::string& sql) {
+std::vector<PriorityDB::Impl::Record> PriorityDB::Impl::execute_(const std::string& sql) {
     std::vector<Record> response;
     auto db = open_db_();
     char* error;
