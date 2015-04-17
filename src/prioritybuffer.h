@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <condition_variable>
 #include <fstream>
 #include <functional>
 #include <map>
@@ -54,12 +55,20 @@ class PriorityBuffer {
             fs_.Delete(lowest_hash);
             db_.Delete(lowest_hash);
         }
+
+        condition_.notify_one();;
     }
 
-    T Pop() {
-        std::lock_guard<std::mutex> lock(mutex_);
+    T Pop(bool block=false) {
+        std::unique_lock<std::mutex> lock(mutex_);
         bool on_disk;
         auto hash = db_.GetHighestHash(on_disk);
+        if (block) {
+            while (hash.empty()) {
+                condition_.wait(lock);
+                hash = db_.GetHighestHash(on_disk);
+            }
+        }
 
         if (!on_disk) {
             auto object = objects_[hash];
@@ -125,6 +134,7 @@ class PriorityBuffer {
     PriorityFunction make_priority_;
     std::map<std::string, T> objects_;
     std::mutex mutex_;
+    std::condition_variable condition_;
     int max_memory_;
 };
 

@@ -43,11 +43,29 @@ void pull(PriorityBuffer<PriorityMessage>& buffer) {
     EXPECT_FALSE(buffer.Pop().IsInitialized());
 }
 
+void pull_block(PriorityBuffer<PriorityMessage>& buffer) {
+    for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
+        auto message = buffer.Pop(true);
+        EXPECT_TRUE(message.IsInitialized());
+    }
+    EXPECT_FALSE(buffer.Pop().IsInitialized());
+}
+
 TEST_F(BufferFixture, RandomMultithreadedTestTest) {
     PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread push_thread(push, std::ref(buffer));
     std::thread pull_thread(push, std::ref(buffer));
+
+    push_thread.join();
+    pull_thread.join();
+}
+
+TEST_F(BufferFixture, RandomMultithreadedWithBlockingTestTest) {
+    PriorityBuffer<PriorityMessage> buffer{get_priority};
+
+    std::thread pull_thread(pull_block, std::ref(buffer));
+    std::thread push_thread(push, std::ref(buffer));
 
     push_thread.join();
     pull_thread.join();
