@@ -82,7 +82,7 @@ TEST_F(FSFixture, ConstructCurrentThrowTest) {
         PriorityFS priority_fs{"."};
     } catch (const PriorityFSException& e) {
         thrown = true;
-        EXPECT_EQ(std::string{"PriorityFS must be initialized within the temporary directory"},
+        EXPECT_EQ(std::string{"PriorityFS must be initialized within a valid parent directory"},
                   std::string{e.what()});
     }
     EXPECT_TRUE(thrown);
@@ -94,7 +94,7 @@ TEST_F(FSFixture, ConstructParentThrowTest) {
         PriorityFS priority_fs{".."};
     } catch (const PriorityFSException& e) {
         thrown = true;
-        EXPECT_EQ(std::string{"PriorityFS must be initialized within the temporary directory"},
+        EXPECT_EQ(std::string{"PriorityFS must be initialized within a valid parent directory"},
                   std::string{e.what()});
     }
     EXPECT_TRUE(thrown);

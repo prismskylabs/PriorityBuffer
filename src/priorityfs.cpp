@@ -12,7 +12,7 @@ namespace fs = boost::filesystem;
 
 class PriorityFS::Impl {
   public:
-    Impl(const std::string& buffer_directory);
+    Impl(const std::string& buffer_directory, const std::string& buffer_parent);
 
     std::string GetFilePath(const std::string& file);
     bool GetInput(const std::string& file, std::ifstream& stream);
@@ -23,14 +23,15 @@ class PriorityFS::Impl {
     fs::path buffer_path_;
 };
 
-PriorityFS::Impl::Impl(const std::string& buffer_directory) {
+PriorityFS::Impl::Impl(const std::string& buffer_directory, const std::string& buffer_parent) {
+    auto parent_path = buffer_parent.empty() ? fs::temp_directory_path() : fs::path{buffer_parent};
     if (buffer_directory.empty()) {
         throw PriorityFSException{"Cannot initialize PriorityFS with an empty buffer path"};
     }
-    buffer_path_ = fs::temp_directory_path() / fs::path{buffer_directory};
-    if (fs::equivalent(buffer_path_, fs::temp_directory_path()) ||
-            fs::equivalent(buffer_path_, fs::temp_directory_path() / fs::path{".."})) {
-        throw PriorityFSException{"PriorityFS must be initialized within the temporary directory"};
+    buffer_path_ = parent_path / fs::path{buffer_directory};
+    if (fs::equivalent(buffer_path_, parent_path) ||
+            fs::equivalent(buffer_path_, parent_path / fs::path{".."})) {
+        throw PriorityFSException{"PriorityFS must be initialized within a valid parent directory"};
     }
     fs::create_directory(buffer_path_);
 }
@@ -74,8 +75,8 @@ bool PriorityFS::Impl::Delete(const std::string& file) {
 
 // Bridge
 
-PriorityFS::PriorityFS(const std::string& buffer_directory)
-        : pimpl_{ new Impl{buffer_directory} } {}
+PriorityFS::PriorityFS(const std::string& buffer_directory, const std::string& buffer_parent)
+        : pimpl_{ new Impl{buffer_directory, buffer_parent} } {}
 PriorityFS::~PriorityFS() {}
 
 std::string PriorityFS::GetFilePath(const std::string& file) {

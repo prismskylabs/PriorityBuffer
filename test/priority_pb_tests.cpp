@@ -46,9 +46,10 @@ TEST_F(BufferFixture, RandomPriorityTest) {
 
 TEST_F(BufferFixture, MaxSizePriorityTest) {
     // Each message takes 2 bytes to store. At NUMBER_MESSAGES_IN_TEST max byte size, we can store
-    // half of all messages on disk, and 50 messages in memory, for a total of
-    // NUMBER_MESSAGES_IN_TEST / 2 + 50.
-    PriorityBuffer<PriorityMessage> buffer{get_priority, NUMBER_MESSAGES_IN_TEST};
+    // half of all messages on disk, and DEFAULT_MAX_MEMORY_SIZE messages in memory, for a total of
+    // NUMBER_MESSAGES_IN_TEST / 2 + DEFAULT_MAX_MEMORY_SIZE.
+    PriorityBuffer<PriorityMessage> buffer{get_priority, NUMBER_MESSAGES_IN_TEST,
+                                           DEFAULT_MAX_MEMORY_SIZE};
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
@@ -60,7 +61,7 @@ TEST_F(BufferFixture, MaxSizePriorityTest) {
         buffer.Push(message);
     }
     unsigned long long priority = 100LL;
-    for (int i = 0; i < NUMBER_MESSAGES_IN_TEST / 2 + 50; ++i) {
+    for (int i = 0; i < NUMBER_MESSAGES_IN_TEST / 2 + DEFAULT_MAX_MEMORY_SIZE; ++i) {
         auto message = buffer.Pop();
         EXPECT_TRUE(message.IsInitialized());
         EXPECT_GE(priority, message.priority());
@@ -117,8 +118,8 @@ TEST_F(BufferFixture, DiskDumpAllPriorityTest) {
             EXPECT_EQ(priority, message.priority());
             buffer.Push(message);
         }
-        // Since there are 50 in memory, there should be NUMBER_MESSAGES_IN_TEST - 50 files in the
-        // default buffer directory.
+        // Since there are DEFAULT_MAX_MEMORY_SIZE in memory, there should be
+        // NUMBER_MESSAGES_IN_TEST - DEFAULT_MAX_MEMORY_SIZE files in the default buffer directory.
         
         fs::directory_iterator begin(buffer_path), end;
         int number_of_files = std::count_if(begin, end,
@@ -127,7 +128,7 @@ TEST_F(BufferFixture, DiskDumpAllPriorityTest) {
                              f.path().filename().native().substr(0, 10) == "prism_data");
                 });
 
-        EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST - 50);
+        EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST - DEFAULT_MAX_MEMORY_SIZE);
     }
 
     fs::directory_iterator begin(buffer_path), end;
@@ -169,7 +170,8 @@ TEST_F(BufferFixture, DiskDumpSomePriorityTest) {
                              f.path().filename().native().substr(0, 10) == "prism_data");
                 });
 
-        auto disk_popped = 50 > number_of_popped ? 50 : number_of_popped;
+        auto disk_popped = DEFAULT_MAX_MEMORY_SIZE > number_of_popped ?
+                           DEFAULT_MAX_MEMORY_SIZE : number_of_popped;
         EXPECT_EQ(number_of_files, NUMBER_MESSAGES_IN_TEST - disk_popped);
     }
 

@@ -14,18 +14,34 @@
 #include "prioritydb.h"
 #include "priorityfs.h"
 
+#define DEFAULT_MAX_BUFFER_SIZE 100000000LL
+#define DEFAULT_MAX_MEMORY_SIZE 50
+
 
 template <typename T>
 class PriorityBuffer {
     typedef std::function<unsigned long long(const T&)> PriorityFunction;
 
   public:
-    PriorityBuffer(PriorityFunction make_priority=&PriorityBuffer::epoch_priority_,
-                   const unsigned long long& max_size=100000000LL, const int& max_memory=50,
-                   const std::string& buffer_directory="prism_buffer")
-                : make_priority_{make_priority}, fs_{buffer_directory},
-                  db_{max_size, fs_.GetFilePath("prism_data.db")},
-                  max_memory_{max_memory} {
+    PriorityBuffer()
+            : make_priority_{epoch_priority_}, fs_{"prism_buffer", std::string{}},
+              db_{DEFAULT_MAX_BUFFER_SIZE, fs_.GetFilePath("prism_data.db")},
+              max_memory_{DEFAULT_MAX_MEMORY_SIZE} {
+        srand(std::chrono::steady_clock::now().time_since_epoch().count());
+    }
+
+    PriorityBuffer(PriorityFunction make_priority)
+            : make_priority_{make_priority}, fs_{"prism_buffer", std::string{}},
+              db_{DEFAULT_MAX_BUFFER_SIZE, fs_.GetFilePath("prism_data.db")},
+              max_memory_{DEFAULT_MAX_MEMORY_SIZE} {
+        srand(std::chrono::steady_clock::now().time_since_epoch().count());
+    }
+
+    PriorityBuffer(PriorityFunction make_priority, const unsigned long long& buffer_size,
+                   const int& max_memory)
+            : make_priority_{make_priority}, fs_{"prism_buffer", std::string{}},
+              db_{buffer_size, fs_.GetFilePath("prism_data.db")},
+              max_memory_{max_memory} {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 

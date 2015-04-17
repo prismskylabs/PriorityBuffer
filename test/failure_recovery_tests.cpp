@@ -38,7 +38,7 @@ class FailureFixture : public BufferFixture {
         table_name_ = "prism_data";
         {
             // Create the db so there's a table we can use
-            PriorityDB db{100000000LL, db_string_};
+            PriorityDB db{DEFAULT_MAX_BUFFER_SIZE, db_string_};
         }
     }
 
@@ -174,7 +174,7 @@ TEST_F(FailureFixture, ExistingDiskMessageTest) {
     }
 
     std::random_device generator;
-    std::uniform_int_distribution<unsigned long long> distribution(1, 50LL);
+    std::uniform_int_distribution<unsigned long long> distribution(1, DEFAULT_MAX_MEMORY_SIZE);
     auto number_to_create = distribution(generator);
 
     std::stringstream stream;
@@ -192,12 +192,13 @@ TEST_F(FailureFixture, ExistingDiskMessageTest) {
         file_out << "hello world";
     }
 
-    // Push 50 messages into he buffer with 1 priority, pushing all the previous messages out
-    for (int i = 0; i < 50; ++i) {
         PriorityMessage message;
         message.set_priority(1);
         ASSERT_TRUE(message.IsInitialized());
         buffer.Push(message);
+    // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 1 priority, pushing all the
+    // previous messages out
+    for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
     }
 
     for (int i = 0; i < 100 - number_to_create; ++i) {
@@ -211,18 +212,18 @@ TEST_F(FailureFixture, ExistingDiskMessageTest) {
 
 TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
     std::random_device generator;
-    std::uniform_int_distribution<unsigned long long> distribution(1, 50LL);
+    std::uniform_int_distribution<unsigned long long> distribution(1, DEFAULT_MAX_MEMORY_SIZE);
     auto number_to_create = distribution(generator);
 
     {
         PriorityBuffer<PriorityMessage> buffer{get_priority};
         
-        // Push 50 messages into he buffer with 0 priority
-        for (int i = 0; i < 50; ++i) {
             PriorityMessage message;
             message.set_priority(0);
             ASSERT_TRUE(message.IsInitialized());
             buffer.Push(message);
+        // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 0 priority
+        for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
         }
 
         std::stringstream stream;
@@ -249,7 +250,7 @@ TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
                          f.path().filename().native().substr(0, 10) == "prism_data");
             });
 
-    EXPECT_EQ(50 - number_to_create, number_of_files);
+    EXPECT_EQ(DEFAULT_MAX_MEMORY_SIZE - number_to_create, number_of_files);
 }
 
 int main(int argc, char** argv) {

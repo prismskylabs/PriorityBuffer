@@ -8,7 +8,7 @@
 
 class PriorityFS {
   public:
-    PriorityFS(const std::string& buffer_directory);
+    PriorityFS(const std::string& buffer_directory, const std::string& buffer_parent=std::string{});
     ~PriorityFS();
 
     std::string GetFilePath(const std::string& file);
