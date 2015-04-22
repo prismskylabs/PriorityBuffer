@@ -66,26 +66,28 @@ endif()
 
 # Protobuf configuration
 
-message(STATUS "| Protobuf Configuration")
-message(STATUS "|================================================================================")
+if(BUILD_PRIORITYBUFFER_TESTS)
+    message(STATUS "| Protobuf Configuration")
+    message(STATUS "|================================================================================")
 
-find_package(Protobuf REQUIRED)
+    find_package(Protobuf REQUIRED)
 
-if(USE_SYSTEM_PROTOBUF)
-    find_package(Protobuf)
+    if(USE_SYSTEM_PROTOBUF)
+        find_package(Protobuf)
+    endif()
+    if(NOT USE_SYSTEM_PROTOBUF OR NOT PROTOBUF_FOUND)
+        message(FATAL_ERROR "System libprotobuf and protoc is required to proceed.\n"
+            "If you're using OS X and have Homebrew installed, you can use the command:\n"
+            "\tbrew install protobuf\n"
+            "If you're using a Linux distribution like Ubuntu, you can use the command:\n"
+            "\tapt-get install libprotobuf-dev protoc")
+    endif()
+
+    _set_cache(PROTOBUF_FOUND "Set if libprotobuf was found or built.")
+    _set_cache(PROTOBUF_LIBRARIES "Location of libprotobuf.")
+    _set_cache(PROTOBUF_INCLUDE_DIRS "Location of protobuf include files.")
+    message(STATUS "|================================================================================")
 endif()
-if(NOT USE_SYSTEM_PROTOBUF OR NOT PROTOBUF_FOUND)
-    message(FATAL_ERROR "System libprotobuf and protoc is required to proceed.\n"
-        "If you're using OS X and have Homebrew installed, you can use the command:\n"
-        "\tbrew install protobuf\n"
-        "If you're using a Linux distribution like Ubuntu, you can use the command:\n"
-        "\tapt-get install libprotobuf-dev protoc")
-endif()
-
-_set_cache(PROTOBUF_FOUND "Set if libprotobuf was found or built.")
-_set_cache(PROTOBUF_LIBRARIES "Location of libprotobuf.")
-_set_cache(PROTOBUF_INCLUDE_DIRS "Location of protobuf include files.")
-message(STATUS "|================================================================================")
 
 
 # sqlite3
