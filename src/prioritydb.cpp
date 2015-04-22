@@ -20,6 +20,7 @@ class PriorityDB::Impl {
         if (!check_table_()) {
             create_table_();
         }
+        delete_memory_messages_();
     }
 
     void Insert(const unsigned long long& priority, const std::string& hash,
@@ -37,6 +38,7 @@ class PriorityDB::Impl {
     std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> open_db_();
     bool check_table_();
     void create_table_();
+    void delete_memory_messages_();
     std::vector<Record> execute_(const std::string& sql);
     static int callback_(void* response_ptr, int num_values, char** values, char** names);
 
@@ -199,6 +201,16 @@ void PriorityDB::Impl::create_table_() {
            << "size UNSIGNED BIGINT NOT NULL,"
            << "on_disk BOOL NOT NULL"
            << ");";
+    execute_(stream.str());
+}
+
+void PriorityDB::Impl::delete_memory_messages_() {
+    std::stringstream stream;
+    stream << "DELETE FROM "
+           << table_name_
+           << " WHERE on_disk='"
+           << false
+           << "';";
     execute_(stream.str());
 }
 
