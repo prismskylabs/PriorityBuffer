@@ -19,7 +19,7 @@ target_include_directories(basic_pb_tests PRIVATE
     ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(basic_pb_tests
-    ${GTEST_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES}
     ${PROTOBUF_LIBRARIES})
 
@@ -40,7 +40,7 @@ target_include_directories(priority_pb_tests PRIVATE
     ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(priority_pb_tests
-    ${GTEST_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES}
     ${PROTOBUF_LIBRARIES})
 
@@ -59,7 +59,7 @@ target_include_directories(failure_recovery_tests PRIVATE
     ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(failure_recovery_tests
-    ${GTEST_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES}
     ${PROTOBUF_LIBRARIES})
 
@@ -78,7 +78,7 @@ target_include_directories(multithread_tests PRIVATE
     ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(multithread_tests
-    ${GTEST_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES}
     ${PROTOBUF_LIBRARIES})
 
@@ -94,7 +94,7 @@ target_include_directories(fs_tests PRIVATE
     ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(fs_tests
-    ${GTEST_MAIN_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES})
 
 add_test(NAME fs_tests COMMAND fs_tests)
@@ -109,7 +109,7 @@ target_include_directories(db_tests PRIVATE
     ${BOOSTFILESYSTEM_INCLUDE_DIRS})
 
 target_link_libraries(db_tests
-    ${GTEST_MAIN_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
     ${PRIORITYBUFFER_LIBRARIES})
 
 add_test(NAME db_tests COMMAND db_tests)
