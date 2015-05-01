@@ -48,6 +48,14 @@ class PriorityBuffer {
         srand(std::chrono::steady_clock::now().time_since_epoch().count());
     }
 
+    PriorityBuffer(PriorityFunction make_priority, const std::string& buffer_root,
+                   const unsigned long long& buffer_size, const int& max_memory)
+            : make_priority_{make_priority}, fs_{"prism_buffer", std::string{buffer_root}},
+              db_{buffer_size, fs_.GetFilePath("prism_data.db")}, max_memory_{max_memory}, 
+              fuzzer_{0, 0} {
+        srand(std::chrono::steady_clock::now().time_since_epoch().count());
+    }
+
     ~PriorityBuffer() {
         for (auto object = objects_.begin(); object != objects_.end(); ++object) {
             auto hash = object->first;
