@@ -31,6 +31,8 @@ class PriorityDB::Impl {
     std::string GetLowestMemoryHash();
     std::string GetLowestDiskHash();
     bool Full();
+    int GetDiskLength();
+    unsigned long long GetDiskSize();
 
   private:
     typedef std::map<std::string, std::string> Record;
@@ -154,6 +156,29 @@ std::string PriorityDB::Impl::GetLowestDiskHash() {
 }
 
 bool PriorityDB::Impl::Full() {
+    return GetDiskSize() > max_size_;
+}
+
+int PriorityDB::Impl::GetDiskLength() {
+    std::stringstream stream;
+    stream << "SELECT COUNT(*) FROM "
+           << table_name_
+           << " WHERE on_disk="
+           << true
+           << ";";
+    auto response = execute_(stream.str());
+    unsigned long long total = 0;
+    if (!response.empty()) {
+        auto record = response[0];
+        if (!record.empty()) {
+            total = std::stoi(record["COUNT(*)"]);
+        }
+    }
+
+    return total;
+}
+
+unsigned long long PriorityDB::Impl::GetDiskSize() {
     std::stringstream stream;
     stream << "SELECT SUM(size) FROM "
            << table_name_
@@ -169,7 +194,7 @@ bool PriorityDB::Impl::Full() {
         }
     }
 
-    return total > max_size_;
+    return total;
 }
 
 std::unique_ptr<sqlite3, std::function<int(sqlite3*)>> PriorityDB::Impl::open_db_() {
@@ -276,4 +301,12 @@ std::string PriorityDB::GetLowestDiskHash() {
 
 bool PriorityDB::Full() {
     return pimpl_->Full();
+}
+
+int PriorityDB::GetDiskLength() {
+    return pimpl_->GetDiskLength();
+}
+
+unsigned long long PriorityDB::GetDiskSize() {
+    return pimpl_->GetDiskSize();
 }

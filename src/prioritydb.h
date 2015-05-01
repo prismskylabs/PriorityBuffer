@@ -18,6 +18,8 @@ class PriorityDB {
     std::string GetLowestMemoryHash();
     std::string GetLowestDiskHash();
     bool Full();
+    int GetDiskLength();
+    unsigned long long GetDiskSize();
 
   private:
     class Impl;
