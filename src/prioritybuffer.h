@@ -121,6 +121,13 @@ class PriorityBuffer {
         return object;
     }
 
+  protected:
+    PriorityFS fs_;
+    PriorityDB db_;
+    std::map<std::string, std::unique_ptr<T>> objects_;
+    std::mutex mutex_;
+    std::condition_variable condition_;
+
   private:
     static unsigned long long epoch_priority_(const T& t) {
         return std::chrono::steady_clock::now().time_since_epoch().count();
@@ -169,12 +176,7 @@ class PriorityBuffer {
         return false;
     }
 
-    PriorityFS fs_;
-    PriorityDB db_;
     PriorityFunction make_priority_;
-    std::map<std::string, std::unique_ptr<T>> objects_;
-    std::mutex mutex_;
-    std::condition_variable condition_;
     int max_memory_;
     std::random_device generator_;
     std::uniform_int_distribution<unsigned long> fuzzer_;
