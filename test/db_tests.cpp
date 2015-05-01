@@ -1163,3 +1163,87 @@ TEST_F(DBFixture, DeletedDBThrowFullTest) {
     }
     EXPECT_TRUE(thrown);
 }
+
+TEST_F(DBFixture, GetDiskLengthZeroTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    EXPECT_EQ(0, db.GetDiskLength());
+}
+
+TEST_F(DBFixture, GetDiskLengthStillZeroTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    EXPECT_EQ(0, db.GetDiskLength());
+}
+
+TEST_F(DBFixture, GetDiskLengthOneTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    EXPECT_EQ(1, db.GetDiskLength());
+}
+
+TEST_F(DBFixture, GetDiskLengthStillOneTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, false);
+    EXPECT_EQ(1, db.GetDiskLength());
+}
+
+TEST_F(DBFixture, GetDiskLengthManyTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, true);
+    }
+    EXPECT_EQ(number_of_records, db.GetDiskLength());
+}
+
+TEST_F(DBFixture, GetDiskLengthManyAlternateTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+    }
+    EXPECT_EQ(number_of_records / 2, db.GetDiskLength());
+}
+
+TEST_F(DBFixture, GetDiskSizeZeroTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    EXPECT_EQ(0, db.GetDiskSize());
+}
+
+TEST_F(DBFixture, GetDiskSizeStillZeroTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, false);
+    EXPECT_EQ(0, db.GetDiskSize());
+}
+
+TEST_F(DBFixture, GetDiskSizeOneTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    EXPECT_EQ(5, db.GetDiskSize());
+}
+
+TEST_F(DBFixture, GetDiskSizeStillOneTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    db.Insert(1, "hash", 5, true);
+    db.Insert(3, "hashbrowns", 10, false);
+    EXPECT_EQ(5, db.GetDiskSize());
+}
+
+TEST_F(DBFixture, GetDiskSizeManyTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, true);
+    }
+    EXPECT_EQ(99 * number_of_records, db.GetDiskSize());
+}
+
+TEST_F(DBFixture, GetDiskSizeManyAlternateTest) {
+    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    auto number_of_records = 100;
+    for (int i = 0; i < number_of_records; ++i) {
+        db.Insert(i, std::to_string(i * i), i * 2, i % 2);
+    }
+    EXPECT_EQ(100 * number_of_records / 2, db.GetDiskSize());
+}
