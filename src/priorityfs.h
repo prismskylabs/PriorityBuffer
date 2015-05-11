@@ -23,7 +23,7 @@ class PriorityFS {
 
 class PriorityFSException : public std::exception {
   public:
-    PriorityFSException(const std::string& reason) throw() : reason_{reason} {}
+    PriorityFSException(const std::string& reason) : reason_(reason) {}
     virtual const char* what() const throw() {
         return reason_.data();
     }

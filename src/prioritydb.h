@@ -28,7 +28,7 @@ class PriorityDB {
 
 class PriorityDBException : public std::exception {
   public:
-    PriorityDBException(const std::string& reason) throw() : reason_{reason} {}
+    PriorityDBException(const std::string& reason) : reason_(reason) {}
     virtual const char* what() const throw() {
         return reason_.data();
     }

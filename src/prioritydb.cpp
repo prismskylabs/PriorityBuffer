@@ -13,7 +13,7 @@
 class PriorityDB::Impl {
   public:
     Impl(const unsigned long long& max_size, const std::string& path)
-            : max_size_{max_size}, table_path_{path}, table_name_{"prism_data"} {
+            : max_size_{max_size}, table_path_(path), table_name_("prism_data") {
         if (max_size_ == 0LL) {
             throw PriorityDBException{"Must specify a nonzero max_size"};
         }
