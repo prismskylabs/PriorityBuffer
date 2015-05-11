@@ -52,7 +52,7 @@ if(BUILD_PRIORITYBUFFER_TESTS)
         cmake_policy(SET CMP0026 OLD)
         get_property(GTEST_LIBRARIES TARGET gtest PROPERTY LOCATION)
         get_property(GTEST_MAIN_LIBRARIES TARGET gtest_main PROPERTY LOCATION)
-        set(GTEST_BOTH_LIBRARIES ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
+        set(GTEST_BOTH_LIBRARIES gtest gtest_main)
         set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
     endif()
 
