@@ -37,13 +37,13 @@ PriorityFS::Impl::Impl(const std::string& buffer_directory, const std::string& b
 }
 
 std::string PriorityFS::Impl::GetFilePath(const std::string& file) {
-    return std::string((buffer_path_ / fs::path{file}).native());
+    return (buffer_path_ / fs::path{file}).string();
 }
 
 bool PriorityFS::Impl::GetInput(const std::string& file, std::ifstream& stream) {
     auto file_path = buffer_path_ / fs::path{file};
     if (!fs::is_directory(file_path) &&
-            std::string("..") != std::string(file_path.filename().native()) &&
+            std::string{".."} != file_path.filename().string() &&
             fs::exists(file_path)) {
         stream.open(file_path.native());
         return true;
@@ -54,7 +54,7 @@ bool PriorityFS::Impl::GetInput(const std::string& file, std::ifstream& stream) 
 bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream) {
     auto file_path = buffer_path_ / fs::path{file};
     if (!fs::is_directory(file_path) &&
-            std::string("..") != std::string(file_path.filename().native()) &&
+            std::string{".."} != file_path.filename().string() &&
             !fs::exists(file_path)) {
         stream.open(file_path.native());
         return true;
@@ -65,7 +65,7 @@ bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream)
 bool PriorityFS::Impl::Delete(const std::string& file) {
     auto file_path = buffer_path_ / fs::path{file};
     if (!fs::is_directory(file_path) &&
-            std::string("..") != std::string(file_path.filename().native()) &&
+            std::string{".."} != file_path.filename().string() &&
             fs::exists(file_path)) {
         return fs::remove(buffer_path_ / fs::path{file});
     }
