@@ -1,7 +1,7 @@
 set(SQLITE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 set(SQLITE_LIBRARIES sqlite3)
 
-add_library(${SQLITE_LIBRARIES}
+add_library(${SQLITE_LIBRARIES} STATIC
     sqlite3.h
     sqlite3.c)
 
