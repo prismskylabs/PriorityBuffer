@@ -122,7 +122,7 @@ class PriorityBuffer {
             }
         }
 
-        if (block && fuzzer_.b() > 0 && fuzzer_.a() <= fuzzer_.b()) {
+        if (object && fuzzer_.b() > 0 && fuzzer_.a() <= fuzzer_.b()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(fuzzer_(generator_)));
         }
 
