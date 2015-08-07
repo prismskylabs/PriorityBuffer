@@ -11,7 +11,7 @@
 #define DEFAULT_MAX_SIZE 100000000LL
 
 
-namespace fs = boost::filesystem;
+namespace fs = ::boost::filesystem;
 
 TEST_F(DBFixture, EmptyDBTest) {
     EXPECT_FALSE(fs::exists(db_path_));

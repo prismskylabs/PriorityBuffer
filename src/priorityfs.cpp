@@ -8,9 +8,10 @@
 #include <string>
 
 
-namespace fs = boost::filesystem;
 namespace prism {
 namespace prioritybuffer {
+
+namespace fs = ::boost::filesystem;
 
 class PriorityFS::Impl {
   public:

@@ -10,7 +10,7 @@
 #include "prioritydb.h"
 
 
-namespace fs = boost::filesystem;
+namespace fs = ::boost::filesystem;
 
 class DBFixture : public FSFixture {
   protected:

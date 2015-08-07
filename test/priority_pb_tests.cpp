@@ -15,7 +15,7 @@
 #endif
 
 
-namespace fs = boost::filesystem;
+namespace fs = ::boost::filesystem;
 
 unsigned long long get_priority(const PriorityMessage& message) {
     return message.priority();
