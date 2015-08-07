@@ -3,7 +3,7 @@ set(PRIORITYBUFFER_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL
     "Main object library for PriorityBuffer")
 
 add_library(${PRIORITYBUFFER_LIBRARIES} STATIC
-    prioritybuffer.h prioritybuffer.cpp
+    prioritybuffer.h
     prioritydb.h prioritydb.cpp
     priorityfs.h priorityfs.cpp)
 
