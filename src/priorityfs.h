@@ -6,6 +6,9 @@
 #include <string>
 
 
+namespace prism {
+namespace prioritybuffer {
+
 class PriorityFS {
   public:
     PriorityFS(const std::string& buffer_directory, const std::string& buffer_parent=std::string{});
@@ -31,5 +34,8 @@ class PriorityFSException : public std::exception {
   private:
     std::string reason_;
 };
+
+} // namespace prioritybuffer
+} // namespace prism
 
 #endif /* PRIORITYBUFFER_FS_H */

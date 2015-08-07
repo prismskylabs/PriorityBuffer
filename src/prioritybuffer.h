@@ -21,6 +21,9 @@
 #define DEFAULT_MAX_MEMORY_SIZE 50
 
 
+namespace prism {
+namespace prioritybuffer {
+
 template <typename T>
 class PriorityBuffer {
     typedef std::function<unsigned long long(const T&)> PriorityFunction;
@@ -189,5 +192,8 @@ class PriorityBuffer {
     std::random_device generator_;
     std::uniform_int_distribution<unsigned long> fuzzer_;
 };
+
+} // namespace prioritybuffer
+} // namespace prism
 
 #endif /* PRIORITYBUFFER_Buffer_H */

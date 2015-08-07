@@ -9,6 +9,8 @@
 
 
 namespace fs = boost::filesystem;
+namespace prism {
+namespace prioritybuffer {
 
 class PriorityFS::Impl {
   public:
@@ -94,3 +96,6 @@ bool PriorityFS::GetOutput(const std::string& file, std::ofstream& stream) {
 bool PriorityFS::Delete(const std::string& file) {
     return pimpl_->Delete(file);
 }
+
+} // namespace prioritybuffer
+} // namespace prism

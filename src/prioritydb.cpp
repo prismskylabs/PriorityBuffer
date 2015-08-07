@@ -10,6 +10,9 @@
 #include <sqlite3.h>
 
 
+namespace prism {
+namespace prioritybuffer {
+
 class PriorityDB::Impl {
   public:
     Impl(const unsigned long long& max_size, const std::string& path)
@@ -310,3 +313,6 @@ int PriorityDB::GetDiskLength() {
 unsigned long long PriorityDB::GetDiskSize() {
     return pimpl_->GetDiskSize();
 }
+
+} // namespace prioritybuffer
+} // namespace prism

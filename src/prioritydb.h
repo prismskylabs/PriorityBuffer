@@ -5,6 +5,9 @@
 #include <string>
 
 
+namespace prism {
+namespace prioritybuffer {
+
 class PriorityDB {
   public:
     PriorityDB(const unsigned long long& max_size, const std::string& path);
@@ -36,5 +39,8 @@ class PriorityDBException : public std::exception {
   private:
     std::string reason_;
 };
+
+} // namespace prioritybuffer
+} // namespace prism
 
 #endif /* PRIORITYBUFFER_DB_H */
