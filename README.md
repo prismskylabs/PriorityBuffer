@@ -16,7 +16,7 @@ message Basic {
 #include "basic.pb.h"
 
 int main(int argc,  char** argv) {
-    PriorityBuffer<Basic> buffer;
+    prism::prioritybuffer::PriorityBuffer<Basic> buffer;
     for (int i = 0; i < 1000; ++i) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
         basic.set_value("hello world!");
@@ -44,7 +44,7 @@ int priority_function(const Basic& basic) {
 }
 
 int main(int argc,  char** argv) {
-    PriorityBuffer<Basic> buffer{priority_function};
+    prism::prioritybuffer::PriorityBuffer<Basic> buffer{priority_function};
     for (int i = 0; i < 1000; ++i) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
         basic.set_value(std::to_string(i));
