@@ -12,6 +12,7 @@
 
 
 namespace fs = ::boost::filesystem;
+namespace pb = ::prism::prioritybuffer;
 
 TEST_F(DBFixture, EmptyDBTest) {
     EXPECT_FALSE(fs::exists(db_path_));
@@ -19,14 +20,14 @@ TEST_F(DBFixture, EmptyDBTest) {
 
 TEST_F(DBFixture, ConstructDBTest) {
     ASSERT_FALSE(fs::exists(db_path_));
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     EXPECT_TRUE(fs::exists(db_path_));
 }
 
 TEST_F(DBFixture, ConstructDBNoDestructTest) {
     ASSERT_FALSE(fs::exists(db_path_));
     {
-        PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
         EXPECT_TRUE(fs::exists(db_path_));
     }
     EXPECT_TRUE(fs::exists(db_path_));
@@ -35,11 +36,11 @@ TEST_F(DBFixture, ConstructDBNoDestructTest) {
 TEST_F(DBFixture, ConstructDBMultipleTest) {
     ASSERT_FALSE(fs::exists(db_path_));
     {
-        PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
         ASSERT_TRUE(fs::exists(db_path_));
     }
     {
-        PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
         EXPECT_TRUE(fs::exists(db_path_));
     }
     EXPECT_TRUE(fs::exists(db_path_));
@@ -48,8 +49,8 @@ TEST_F(DBFixture, ConstructDBMultipleTest) {
 TEST_F(DBFixture, ConstructThrowTest) {
     bool thrown = false;
     try {
-        PriorityDB db{DEFAULT_MAX_SIZE, (fs::temp_directory_path() / fs::path{""}).native()};
-    } catch (const PriorityDBException& e) {
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, (fs::temp_directory_path() / fs::path{""}).native()};
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"unable to open database file"},
                   std::string{e.what()});
@@ -60,8 +61,8 @@ TEST_F(DBFixture, ConstructThrowTest) {
 TEST_F(DBFixture, ConstructCurrentThrowTest) {
     bool thrown = false;
     try {
-        PriorityDB db{DEFAULT_MAX_SIZE, (fs::temp_directory_path() / fs::path{"."}).native()};
-    } catch (const PriorityDBException& e) {
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, (fs::temp_directory_path() / fs::path{"."}).native()};
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"unable to open database file"},
                   std::string{e.what()});
@@ -72,8 +73,8 @@ TEST_F(DBFixture, ConstructCurrentThrowTest) {
 TEST_F(DBFixture, ConstructParentThrowTest) {
     bool thrown = false;
     try {
-        PriorityDB db{DEFAULT_MAX_SIZE, (fs::temp_directory_path() / fs::path{".."}).native()};
-    } catch (const PriorityDBException& e) {
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, (fs::temp_directory_path() / fs::path{".."}).native()};
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"unable to open database file"},
                   std::string{e.what()});
@@ -84,8 +85,8 @@ TEST_F(DBFixture, ConstructParentThrowTest) {
 TEST_F(DBFixture, ConstructZeroSpaceTest) {
     bool thrown = false;
     try {
-        PriorityDB db{0LL, db_string_};
-    } catch (const PriorityDBException& e) {
+        pb::PriorityDB db{0LL, db_string_};
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"Must specify a nonzero max_size"},
                   std::string{e.what()});
@@ -95,7 +96,7 @@ TEST_F(DBFixture, ConstructZeroSpaceTest) {
 
 TEST_F(DBFixture, InitialDBTest) {
     ASSERT_FALSE(fs::exists(db_path_));
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     ASSERT_TRUE(fs::exists(db_path_));
     std::stringstream stream;
     stream << "SELECT name FROM sqlite_master WHERE type='table' AND name='"
@@ -111,7 +112,7 @@ TEST_F(DBFixture, InitialDBTest) {
 
 TEST_F(DBFixture, InitialEmptyDBTest) {
     ASSERT_FALSE(fs::exists(db_path_));
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     ASSERT_TRUE(fs::exists(db_path_));
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -124,7 +125,7 @@ TEST_F(DBFixture, InitialEmptyDBTest) {
 TEST_F(DBFixture, InitialDBAfterDestructorTest) {
     ASSERT_FALSE(fs::exists(db_path_));
     {
-        PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
         ASSERT_TRUE(fs::exists(db_path_));
     }
     ASSERT_TRUE(fs::exists(db_path_));
@@ -143,7 +144,7 @@ TEST_F(DBFixture, InitialDBAfterDestructorTest) {
 TEST_F(DBFixture, InitialEmptyDBAfterDestructorTest) {
     ASSERT_FALSE(fs::exists(db_path_));
     {
-        PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+        pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
         ASSERT_TRUE(fs::exists(db_path_));
     }
     ASSERT_TRUE(fs::exists(db_path_));
@@ -156,7 +157,7 @@ TEST_F(DBFixture, InitialEmptyDBAfterDestructorTest) {
 }
 
 TEST_F(DBFixture, InsertEmptyHashTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "", 5, false);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -167,7 +168,7 @@ TEST_F(DBFixture, InsertEmptyHashTest) {
 }
 
 TEST_F(DBFixture, InsertSingleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -184,7 +185,7 @@ TEST_F(DBFixture, InsertSingleTest) {
 }
 
 TEST_F(DBFixture, InsertCoupleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -214,7 +215,7 @@ TEST_F(DBFixture, InsertCoupleTest) {
 }
 
 TEST_F(DBFixture, InsertManyTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -237,7 +238,7 @@ TEST_F(DBFixture, InsertManyTest) {
 }
 
 TEST_F(DBFixture, DeleteNullTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -257,7 +258,7 @@ TEST_F(DBFixture, DeleteNullTest) {
 }
 
 TEST_F(DBFixture, DeleteBadHashTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -277,7 +278,7 @@ TEST_F(DBFixture, DeleteBadHashTest) {
 }
 
 TEST_F(DBFixture, DeleteSingleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -297,7 +298,7 @@ TEST_F(DBFixture, DeleteSingleTest) {
 }
 
 TEST_F(DBFixture, DeleteCoupleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(2, "hashbrowns", 10, true);
     { 
@@ -319,7 +320,7 @@ TEST_F(DBFixture, DeleteCoupleTest) {
 }
 
 TEST_F(DBFixture, DeleteManyTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -344,7 +345,7 @@ TEST_F(DBFixture, DeleteManyTest) {
 }
 
 TEST_F(DBFixture, UpdateNullTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -371,7 +372,7 @@ TEST_F(DBFixture, UpdateNullTest) {
 }
 
 TEST_F(DBFixture, UpdateBadHashTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -398,7 +399,7 @@ TEST_F(DBFixture, UpdateBadHashTest) {
 }
 
 TEST_F(DBFixture, UpdateSingleFalseToTrueTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -425,7 +426,7 @@ TEST_F(DBFixture, UpdateSingleFalseToTrueTest) {
 }
 
 TEST_F(DBFixture, UpdateSingleTrueToFalseTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     { 
         std::stringstream stream;
@@ -452,7 +453,7 @@ TEST_F(DBFixture, UpdateSingleTrueToFalseTest) {
 }
 
 TEST_F(DBFixture, UpdateSingleFalseToFalseTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     { 
         std::stringstream stream;
@@ -479,7 +480,7 @@ TEST_F(DBFixture, UpdateSingleFalseToFalseTest) {
 }
 
 TEST_F(DBFixture, UpdateSingleTrueToTrueTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     { 
         std::stringstream stream;
@@ -506,7 +507,7 @@ TEST_F(DBFixture, UpdateSingleTrueToTrueTest) {
 }
 
 TEST_F(DBFixture, UpdateCoupleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, true);
     { 
@@ -546,7 +547,7 @@ TEST_F(DBFixture, UpdateCoupleTest) {
 }
 
 TEST_F(DBFixture, UpdateManyTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -570,7 +571,7 @@ TEST_F(DBFixture, UpdateManyTest) {
 }
 
 TEST_F(DBFixture, HighestHashNoneFalseOnDiskTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     std::stringstream stream;
     stream << "SELECT * FROM "
            << table_name_
@@ -583,7 +584,7 @@ TEST_F(DBFixture, HighestHashNoneFalseOnDiskTest) {
 }
 
 TEST_F(DBFixture, HighestHashNoneTrueOnDiskTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     std::stringstream stream;
     stream << "SELECT * FROM "
            << table_name_
@@ -596,7 +597,7 @@ TEST_F(DBFixture, HighestHashNoneTrueOnDiskTest) {
 }
 
 TEST_F(DBFixture, HighestHashSingleInMemoryTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -617,7 +618,7 @@ TEST_F(DBFixture, HighestHashSingleInMemoryTest) {
 }
 
 TEST_F(DBFixture, HighestHashSingleOnDiskTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -638,7 +639,7 @@ TEST_F(DBFixture, HighestHashSingleOnDiskTest) {
 }
 
 TEST_F(DBFixture, HighestHashCoupleInMemoryTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -653,7 +654,7 @@ TEST_F(DBFixture, HighestHashCoupleInMemoryTest) {
 }
 
 TEST_F(DBFixture, HighestHashCoupleOnDiskTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -668,7 +669,7 @@ TEST_F(DBFixture, HighestHashCoupleOnDiskTest) {
 }
 
 TEST_F(DBFixture, HighestHashCoupleTiedTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(1, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -683,7 +684,7 @@ TEST_F(DBFixture, HighestHashCoupleTiedTest) {
 }
 
 TEST_F(DBFixture, HighestHashCoupleTiedAgainTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(1, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -698,7 +699,7 @@ TEST_F(DBFixture, HighestHashCoupleTiedAgainTest) {
 }
 
 TEST_F(DBFixture, HighestHashManyInMemoryTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, (i + 1) % 2);
@@ -715,7 +716,7 @@ TEST_F(DBFixture, HighestHashManyInMemoryTest) {
 }
 
 TEST_F(DBFixture, HighestHashManyOnDiskTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -732,7 +733,7 @@ TEST_F(DBFixture, HighestHashManyOnDiskTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashNoneTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     std::stringstream stream;
     stream << "SELECT * FROM "
            << table_name_
@@ -743,7 +744,7 @@ TEST_F(DBFixture, LowestMemoryHashNoneTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashNoneAgainTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -755,7 +756,7 @@ TEST_F(DBFixture, LowestMemoryHashNoneAgainTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashSingleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -767,7 +768,7 @@ TEST_F(DBFixture, LowestMemoryHashSingleTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashCoupleATest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -780,7 +781,7 @@ TEST_F(DBFixture, LowestMemoryHashCoupleATest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashCoupleBTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -793,7 +794,7 @@ TEST_F(DBFixture, LowestMemoryHashCoupleBTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashCoupleCTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -806,7 +807,7 @@ TEST_F(DBFixture, LowestMemoryHashCoupleCTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashCoupleDTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(3, "hash", 5, false);
     db.Insert(1, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -819,7 +820,7 @@ TEST_F(DBFixture, LowestMemoryHashCoupleDTest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashCoupleETest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -832,7 +833,7 @@ TEST_F(DBFixture, LowestMemoryHashCoupleETest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashManyATest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -847,7 +848,7 @@ TEST_F(DBFixture, LowestMemoryHashManyATest) {
 }
 
 TEST_F(DBFixture, LowestMemoryHashManyBTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, (i + 1) % 2);
@@ -862,7 +863,7 @@ TEST_F(DBFixture, LowestMemoryHashManyBTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashNoneTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     std::stringstream stream;
     stream << "SELECT * FROM "
            << table_name_
@@ -873,7 +874,7 @@ TEST_F(DBFixture, LowestDiskHashNoneTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashNoneAgainTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -885,7 +886,7 @@ TEST_F(DBFixture, LowestDiskHashNoneAgainTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashSingleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     std::stringstream stream;
     stream << "SELECT * FROM "
@@ -897,7 +898,7 @@ TEST_F(DBFixture, LowestDiskHashSingleTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashCoupleATest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -910,7 +911,7 @@ TEST_F(DBFixture, LowestDiskHashCoupleATest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashCoupleBTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -923,7 +924,7 @@ TEST_F(DBFixture, LowestDiskHashCoupleBTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashCoupleCTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -936,7 +937,7 @@ TEST_F(DBFixture, LowestDiskHashCoupleCTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashCoupleDTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(3, "hash", 5, true);
     db.Insert(1, "hashbrowns", 10, true);
     std::stringstream stream;
@@ -949,7 +950,7 @@ TEST_F(DBFixture, LowestDiskHashCoupleDTest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashCoupleETest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     db.Insert(3, "hashbrowns", 10, false);
     std::stringstream stream;
@@ -962,7 +963,7 @@ TEST_F(DBFixture, LowestDiskHashCoupleETest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashManyATest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -977,7 +978,7 @@ TEST_F(DBFixture, LowestDiskHashManyATest) {
 }
 
 TEST_F(DBFixture, LowestDiskHashManyBTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, (i + 1) % 2);
@@ -992,48 +993,48 @@ TEST_F(DBFixture, LowestDiskHashManyBTest) {
 }
 
 TEST_F(DBFixture, FullEmptyTest) { // Yeah this test name is silly
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     EXPECT_FALSE(db.Full());
 }
 
 TEST_F(DBFixture, FullInMemoryUnderTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE - 1, false);
     EXPECT_FALSE(db.Full());
 }
 
 TEST_F(DBFixture, FullInMemoryExactTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE, false);
     EXPECT_FALSE(db.Full());
 }
 
 TEST_F(DBFixture, FullInMemoryOverTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE + 1, false);
     EXPECT_FALSE(db.Full());
 }
 
 TEST_F(DBFixture, FullOnDiskUnderTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE - 1, true);
     EXPECT_FALSE(db.Full());
 }
 
 TEST_F(DBFixture, FullOnDiskExactTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
     EXPECT_FALSE(db.Full());
 }
 
 TEST_F(DBFixture, FullOnDiskOverTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE + 1, true);
     EXPECT_TRUE(db.Full());
 }
 
 TEST_F(DBFixture, FullMixedOverCoupleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
     ASSERT_FALSE(db.Full());
     db.Insert(3, "hashbrowns", 1, false);
@@ -1041,7 +1042,7 @@ TEST_F(DBFixture, FullMixedOverCoupleTest) {
 }
 
 TEST_F(DBFixture, FullOnDiskOverCoupleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
     ASSERT_FALSE(db.Full());
     db.Insert(3, "hashbrowns", 1, true);
@@ -1049,7 +1050,7 @@ TEST_F(DBFixture, FullOnDiskOverCoupleTest) {
 }
 
 TEST_F(DBFixture, FullOnDiskDeleteCoupleTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", DEFAULT_MAX_SIZE, true);
     ASSERT_FALSE(db.Full());
     db.Insert(3, "hashbrowns", 1, true);
@@ -1059,13 +1060,13 @@ TEST_F(DBFixture, FullOnDiskDeleteCoupleTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowInsertTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         db.Insert(1, "hash", 5, false);
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1074,13 +1075,13 @@ TEST_F(DBFixture, DeletedDBThrowInsertTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowDeleteTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         db.Delete("hash");
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1089,13 +1090,13 @@ TEST_F(DBFixture, DeletedDBThrowDeleteTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowUpdateTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         db.Update("hash", true);
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1104,14 +1105,14 @@ TEST_F(DBFixture, DeletedDBThrowUpdateTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowGetHighestHashTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         bool on_disk;
         db.GetHighestHash(on_disk);
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1120,13 +1121,13 @@ TEST_F(DBFixture, DeletedDBThrowGetHighestHashTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowGetLowestMemoryHashTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         db.GetLowestMemoryHash();
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1135,13 +1136,13 @@ TEST_F(DBFixture, DeletedDBThrowGetLowestMemoryHashTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowGetLowestDiskashTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         db.GetLowestDiskHash();
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1150,13 +1151,13 @@ TEST_F(DBFixture, DeletedDBThrowGetLowestDiskashTest) {
 }
 
 TEST_F(DBFixture, DeletedDBThrowFullTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     fs::remove(db_path_);
     ASSERT_FALSE(fs::exists(db_path_));
     bool thrown = false;
     try {
         db.Full();
-    } catch (const PriorityDBException& e) {
+    } catch (const pb::PriorityDBException& e) {
         thrown = true;
         EXPECT_EQ(std::string{"no such table: prism_data"},
                   std::string{e.what()});
@@ -1165,31 +1166,31 @@ TEST_F(DBFixture, DeletedDBThrowFullTest) {
 }
 
 TEST_F(DBFixture, GetDiskLengthZeroTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     EXPECT_EQ(0, db.GetDiskLength());
 }
 
 TEST_F(DBFixture, GetDiskLengthStillZeroTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     EXPECT_EQ(0, db.GetDiskLength());
 }
 
 TEST_F(DBFixture, GetDiskLengthOneTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     EXPECT_EQ(1, db.GetDiskLength());
 }
 
 TEST_F(DBFixture, GetDiskLengthStillOneTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, false);
     EXPECT_EQ(1, db.GetDiskLength());
 }
 
 TEST_F(DBFixture, GetDiskLengthManyTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, true);
@@ -1198,7 +1199,7 @@ TEST_F(DBFixture, GetDiskLengthManyTest) {
 }
 
 TEST_F(DBFixture, GetDiskLengthManyAlternateTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);
@@ -1207,31 +1208,31 @@ TEST_F(DBFixture, GetDiskLengthManyAlternateTest) {
 }
 
 TEST_F(DBFixture, GetDiskSizeZeroTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     EXPECT_EQ(0, db.GetDiskSize());
 }
 
 TEST_F(DBFixture, GetDiskSizeStillZeroTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, false);
     EXPECT_EQ(0, db.GetDiskSize());
 }
 
 TEST_F(DBFixture, GetDiskSizeOneTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     EXPECT_EQ(5, db.GetDiskSize());
 }
 
 TEST_F(DBFixture, GetDiskSizeStillOneTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     db.Insert(1, "hash", 5, true);
     db.Insert(3, "hashbrowns", 10, false);
     EXPECT_EQ(5, db.GetDiskSize());
 }
 
 TEST_F(DBFixture, GetDiskSizeManyTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, true);
@@ -1240,7 +1241,7 @@ TEST_F(DBFixture, GetDiskSizeManyTest) {
 }
 
 TEST_F(DBFixture, GetDiskSizeManyAlternateTest) {
-    PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
+    pb::PriorityDB db{DEFAULT_MAX_SIZE, db_string_};
     auto number_of_records = 100;
     for (int i = 0; i < number_of_records; ++i) {
         db.Insert(i, std::to_string(i * i), i * 2, i % 2);

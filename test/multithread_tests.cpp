@@ -15,12 +15,13 @@
 
 
 namespace fs = ::boost::filesystem;
+namespace pb = ::prism::prioritybuffer;
 
 unsigned long long get_priority(const PriorityMessage& message) {
     return message.priority();
 }
 
-void push(PriorityBuffer<PriorityMessage>& buffer, int messages) {
+void push(pb::PriorityBuffer<PriorityMessage>& buffer, int messages) {
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < messages; ++i) {
@@ -33,7 +34,7 @@ void push(PriorityBuffer<PriorityMessage>& buffer, int messages) {
     }
 }
 
-void pull(PriorityBuffer<PriorityMessage>& buffer) {
+void pull(pb::PriorityBuffer<PriorityMessage>& buffer) {
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ) {
         if (buffer.Pop()) {
             ++i;
@@ -43,7 +44,7 @@ void pull(PriorityBuffer<PriorityMessage>& buffer) {
     EXPECT_EQ(nullptr, buffer.Pop());
 }
 
-void pull_block(PriorityBuffer<PriorityMessage>& buffer, int messages) {
+void pull_block(pb::PriorityBuffer<PriorityMessage>& buffer, int messages) {
     for (int i = 0; i < messages; ++i) {
         auto message = buffer.Pop(true);
         EXPECT_TRUE(message->IsInitialized());
@@ -52,7 +53,7 @@ void pull_block(PriorityBuffer<PriorityMessage>& buffer, int messages) {
 }
 
 TEST_F(FSFixture, RandomMultithreadedTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread push_thread(push, std::ref(buffer), NUMBER_MESSAGES_IN_TEST);
     std::thread pull_thread(push, std::ref(buffer), NUMBER_MESSAGES_IN_TEST);
@@ -62,7 +63,7 @@ TEST_F(FSFixture, RandomMultithreadedTest) {
 }
 
 TEST_F(FSFixture, RandomMultithreadedWithBlockingTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
 
     std::thread pull_thread(pull_block, std::ref(buffer), NUMBER_MESSAGES_IN_TEST);
     std::thread push_thread(push, std::ref(buffer), NUMBER_MESSAGES_IN_TEST);
@@ -72,7 +73,7 @@ TEST_F(FSFixture, RandomMultithreadedWithBlockingTest) {
 }
 
 TEST_F(FSFixture, RandomMultithreadedWithBlockingFuzzTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
     buffer.SetFuzz(1000, 1100); // This test should take ~5 seconds
 
     auto start = std::chrono::system_clock::now();
@@ -88,7 +89,7 @@ TEST_F(FSFixture, RandomMultithreadedWithBlockingFuzzTest) {
 }
 
 TEST_F(FSFixture, RandomMultithreadedWithBlockingNoFuzzTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
     buffer.SetFuzz(0, 0);
 
     auto start = std::chrono::system_clock::now();
@@ -104,7 +105,7 @@ TEST_F(FSFixture, RandomMultithreadedWithBlockingNoFuzzTest) {
 }
 
 TEST_F(FSFixture, RandomMultithreadedWithBlockingBadFuzzTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
     buffer.SetFuzz(1000, 100);
 
     auto start = std::chrono::system_clock::now();

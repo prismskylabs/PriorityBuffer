@@ -11,6 +11,7 @@
 
 
 namespace fs = ::boost::filesystem;
+namespace pb = ::prism::prioritybuffer;
 
 class DBFixture : public FSFixture {
   protected:
@@ -27,7 +28,7 @@ class DBFixture : public FSFixture {
     sqlite3* open_db_() {
         sqlite3* sqlite_db;
         if (sqlite3_open(db_string_.data(), &sqlite_db) != SQLITE_OK) {
-            throw PriorityDBException{sqlite3_errmsg(sqlite_db)};
+            throw pb::PriorityDBException{sqlite3_errmsg(sqlite_db)};
         }
         return sqlite_db;
     }
@@ -58,7 +59,7 @@ class DBFixture : public FSFixture {
         if (rc != SQLITE_OK) {
             auto error_string = std::string{error};
             sqlite3_free(error);
-            throw PriorityDBException{error_string};
+            throw pb::PriorityDBException{error_string};
         }
 
         return response;

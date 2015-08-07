@@ -15,8 +15,10 @@
 #endif
 
 
+namespace pb = ::prism::prioritybuffer;
+
 TEST_F(FSFixture, DefaultPriorityTest) {
-    PriorityBuffer<Basic> basics;
+    pb::PriorityBuffer<Basic> basics;
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
         basic->set_value(std::to_string(i));
@@ -37,7 +39,7 @@ unsigned long long reverse_priority(const Basic& basic) {
 }
 
 TEST_F(FSFixture, ReversePriorityTest) {
-    PriorityBuffer<Basic> basics{reverse_priority};
+    pb::PriorityBuffer<Basic> basics{reverse_priority};
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
         basic->set_value(std::to_string(i));
@@ -62,7 +64,7 @@ TEST_F(FSFixture, OutOfOrderTest) {
             return ordered_priorities[priority_at++];
         };
 
-    PriorityBuffer<Basic> basics{ordered_priority};
+    pb::PriorityBuffer<Basic> basics{ordered_priority};
     for (auto& priority : ordered_priorities) {
         auto basic = std::unique_ptr<Basic>{ new Basic{} };
         basic->set_value(std::to_string(priority));

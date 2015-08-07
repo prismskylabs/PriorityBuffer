@@ -18,6 +18,7 @@
 
 
 namespace fs = ::boost::filesystem;
+namespace pb = ::prism::prioritybuffer;
 
 unsigned long long get_priority(const PriorityMessage& message) {
     return message.priority();
@@ -29,13 +30,13 @@ class FailureFixture : public DBFixture {
         DBFixture::SetUp();
         {
             // Create the db so there's a table we can use
-            PriorityDB db{DEFAULT_MAX_BUFFER_SIZE, db_string_};
+            pb::PriorityDB db{DEFAULT_MAX_BUFFER_SIZE, db_string_};
         }
     }
 };
 
 TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
     std::random_device generator;
     std::uniform_int_distribution<unsigned long long> distribution(0, 100LL);
     for (int i = 0; i < NUMBER_MESSAGES_IN_TEST; ++i) {
@@ -97,7 +98,7 @@ TEST_F(FailureFixture, DeleteSomeDiskMessagesTest) {
 }
 
 TEST_F(FailureFixture, ExistingDiskMessageTest) {
-    PriorityBuffer<PriorityMessage> buffer{get_priority};
+    pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
     
     // Push DEFAULT_MAX_MEMORY_SIZE messages into he buffer with 0 priority
     for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
@@ -150,7 +151,7 @@ TEST_F(FailureFixture, ExistingDiskMessageOnDestructTest) {
     auto number_to_create = distribution(generator);
 
     {
-        PriorityBuffer<PriorityMessage> buffer{get_priority};
+        pb::PriorityBuffer<PriorityMessage> buffer{get_priority};
         
         // Push DEFAULT_MAX_MEMORY_SIZE messages into the buffer with 0 priority
         for (int i = 0; i < DEFAULT_MAX_MEMORY_SIZE; ++i) {
