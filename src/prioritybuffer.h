@@ -71,13 +71,13 @@ class PriorityBuffer {
         fuzzer_ = std::uniform_int_distribution<unsigned long>{fuzz_lower_ms, fuzz_upper_ms};
     }
 
-    void Push(std::unique_ptr<T> t) {
+    void Push(std::unique_ptr<T> object) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto hash = make_hash_();
-        auto t_ptr = t.get();
-        objects_[hash] = std::move(t);
-        auto size = get_size_(*t_ptr);
-        db_.Insert(make_priority_(*t_ptr), hash, size);
+        auto object_ptr = object.get();
+        objects_[hash] = std::move(object);
+        auto size = get_size_(*object_ptr);
+        db_.Insert(make_priority_(*object_ptr), hash, size);
 
         while (objects_.size() > max_memory_) {
             auto lowest_hash = db_.GetLowestMemoryHash();
@@ -140,7 +140,7 @@ class PriorityBuffer {
     std::condition_variable condition_;
 
   private:
-    static unsigned long long epoch_priority_(const T& t) {
+    static unsigned long long epoch_priority_(const T& object) {
         return std::chrono::steady_clock::now().time_since_epoch().count();
     }
 
@@ -157,27 +157,27 @@ class PriorityBuffer {
         return stream.str();
     }
 
-    static unsigned long get_size_(const T& t) {
-        return t.ByteSize();
+    static unsigned long get_size_(const T& object) {
+        return object.ByteSize();
     }
 
     std::unique_ptr<T> inflate(const std::string& hash) {
         std::ifstream file_stream;
         if (fs_.GetInput(hash, file_stream) && file_stream.is_open()) {
-            auto t = std::unique_ptr<T>{ new T{} };
-            t->ParseFromIstream(&file_stream);
-            t->CheckInitialized();
+            auto object = std::unique_ptr<T>{ new T{} };
+            object->ParseFromIstream(&file_stream);
+            object->CheckInitialized();
             file_stream.close();
             fs_.Delete(hash);
-            return t;
+            return object;
         }
         return nullptr;
     }
 
-    bool save_to_disk(const T& t, const std::string& hash) {
+    bool save_to_disk(const T& object, const std::string& hash) {
         std::ofstream file_stream;
         if (fs_.GetOutput(hash, file_stream) && file_stream.is_open()) {
-            t.SerializeToOstream(&file_stream);
+            object.SerializeToOstream(&file_stream);
             file_stream.close();
             db_.Update(hash, true);
             return true;
