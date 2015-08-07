@@ -1,5 +1,5 @@
-#ifndef PRIORITY_FS_H
-#define PRIORITY_FS_H
+#ifndef PRIORITYBUFFER_FS_H
+#define PRIORITYBUFFER_FS_H
 
 #include <fstream>
 #include <memory>
@@ -32,4 +32,4 @@ class PriorityFSException : public std::exception {
     std::string reason_;
 };
 
-#endif
+#endif /* PRIORITYBUFFER_FS_H */

@@ -1,5 +1,5 @@
-#ifndef PRIORITY_BUFFER_H
-#define PRIORITY_BUFFER_H
+#ifndef PRIORITYBUFFER_Buffer_H
+#define PRIORITYBUFFER_Buffer_H
 
 #include <algorithm>
 #include <chrono>
@@ -190,4 +190,4 @@ class PriorityBuffer {
     std::uniform_int_distribution<unsigned long> fuzzer_;
 };
 
-#endif
+#endif /* PRIORITYBUFFER_Buffer_H */

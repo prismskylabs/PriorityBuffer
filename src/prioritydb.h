@@ -1,5 +1,5 @@
-#ifndef PRIORITY_DB_H
-#define PRIORITY_DB_H
+#ifndef PRIORITYBUFFER_DB_H
+#define PRIORITYBUFFER_DB_H
 
 #include <memory>
 #include <string>
@@ -37,4 +37,4 @@ class PriorityDBException : public std::exception {
     std::string reason_;
 };
 
-#endif
+#endif /* PRIORITYBUFFER_DB_H */
