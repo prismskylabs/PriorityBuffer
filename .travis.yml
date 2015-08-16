@@ -21,6 +21,7 @@ addons:
       - llvm-toolchain-precise
       - llvm-toolchain-precise-3.6
     packages:
+      - cmake
       - g++-4.8
       - g++-4.9
       - g++-5
