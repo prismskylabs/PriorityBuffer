@@ -1,12 +1,12 @@
 set(SQLITE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 set(SQLITE_LIBRARIES sqlite3)
 
+include_directories(
+    ${SQLITE_INCLUDE_DIRS})
+
 add_library(${SQLITE_LIBRARIES}
     sqlite3.h
     sqlite3.c)
-
-target_include_directories(${SQLITE_LIBRARIES} PRIVATE
-    ${SQLITE_INCLUDE_DIRS})
 
 target_link_libraries(${SQLITE_LIBRARIES}
     ${CMAKE_DL_LIBS})
