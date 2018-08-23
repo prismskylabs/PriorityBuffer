@@ -45,7 +45,7 @@ bool PriorityFS::Impl::GetInput(const std::string& file, std::ifstream& stream) 
     if (!fs::is_directory(file_path) &&
             std::string{".."} != file_path.filename().string() &&
             fs::exists(file_path)) {
-        stream.open(file_path.native());
+        stream.open(file_path.native(), std::ios::in | std::ios::binary);
         return true;
     }
     return false;
@@ -56,7 +56,7 @@ bool PriorityFS::Impl::GetOutput(const std::string& file, std::ofstream& stream)
     if (!fs::is_directory(file_path) &&
             std::string{".."} != file_path.filename().string() &&
             !fs::exists(file_path)) {
-        stream.open(file_path.native());
+        stream.open(file_path.native(), std::ios::out | std::ios::binary);
         return true;
     }
     return false;
