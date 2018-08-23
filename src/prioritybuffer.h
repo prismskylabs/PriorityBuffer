@@ -99,7 +99,7 @@ class PriorityBuffer {
         T object;
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            bool on_disk;
+            bool on_disk = true;
             auto hash = db_.GetHighestHash(on_disk);
             if (block) {
                 while (hash.empty()) {
