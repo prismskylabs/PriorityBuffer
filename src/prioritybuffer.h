@@ -59,7 +59,7 @@ class PriorityBuffer {
     ~PriorityBuffer() {
         for (auto object = objects_.begin(); object != objects_.end(); ++object) {
             auto hash = object->first;
-            save_to_disk(*(object->second.get()), hash);
+            save_to_disk(object->second, hash);
         }
     }
 
@@ -68,20 +68,19 @@ class PriorityBuffer {
         fuzzer_ = std::uniform_int_distribution<unsigned long>{fuzz_lower_ms, fuzz_upper_ms};
     }
 
-    void Push(std::unique_ptr<T> t) {
+    void Push(T& t) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto hash = make_hash_();
-        auto t_ptr = t.get();
-        objects_[hash] = std::move(t);
-        auto size = get_size_(*t_ptr);
-        db_.Insert(make_priority_(*t_ptr), hash, size);
+        objects_[hash] = t;
+        auto size = get_size_(t);
+        db_.Insert(make_priority_(t), hash, size);
 
         while (objects_.size() > max_memory_) {
             auto lowest_hash = db_.GetLowestMemoryHash();
             auto find = objects_.find(lowest_hash);
             if (find != objects_.end()) {
-                auto object = std::move(find->second);
-                save_to_disk(*(object.get()), lowest_hash);
+                auto object = find->second;
+                save_to_disk(object, lowest_hash);
                 objects_.erase(lowest_hash);
             }
         }
@@ -95,9 +94,9 @@ class PriorityBuffer {
         condition_.notify_one();;
     }
 
-    std::unique_ptr<T> Pop(bool block=false) {
-        std::unique_ptr<T> object = nullptr;
-
+    T Pop(bool block=false)
+    {
+        T object;
         {
             std::unique_lock<std::mutex> lock(mutex_);
             bool on_disk;
@@ -114,15 +113,15 @@ class PriorityBuffer {
             if (!on_disk) {
                 auto find = objects_.find(hash);
                 if (find != objects_.end()) {
-                    object = std::move(find->second);
+                    object = find->second;
                     objects_.erase(hash);
                 }
             } else {
-                object = std::move(inflate(hash));
+                object = inflate(hash);
             }
         }
 
-        if (object && fuzzer_.b() > 0 && fuzzer_.a() <= fuzzer_.b()) {
+        if (object.IsInitialized() && fuzzer_.b() > 0 && fuzzer_.a() <= fuzzer_.b()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(fuzzer_(generator_)));
         }
 
@@ -132,7 +131,7 @@ class PriorityBuffer {
   protected:
     PriorityFS fs_;
     PriorityDB db_;
-    std::map<std::string, std::unique_ptr<T>> objects_;
+    std::map<std::string, T> objects_;
     std::mutex mutex_;
     std::condition_variable condition_;
 
@@ -158,17 +157,18 @@ class PriorityBuffer {
         return t.ByteSize();
     }
 
-    std::unique_ptr<T> inflate(const std::string& hash) {
+    T inflate(const std::string& hash) {
         std::ifstream file_stream;
-        if (fs_.GetInput(hash, file_stream) && file_stream.is_open()) {
-            auto t = std::unique_ptr<T>{ new T{} };
-            t->ParseFromIstream(&file_stream);
-            t->CheckInitialized();
+        T t;
+        if (fs_.GetInput(hash, file_stream) && file_stream.is_open())
+        {
+            t.ParseFromIstream(&file_stream);
+            t.CheckInitialized();
             file_stream.close();
             fs_.Delete(hash);
-            return t;
         }
-        return nullptr;
+        return t;
+        ;
     }
 
     bool save_to_disk(const T& t, const std::string& hash) {
