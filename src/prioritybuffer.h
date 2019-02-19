@@ -71,9 +71,9 @@ class PriorityBuffer {
     void Push(T& t) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto hash = make_hash_();
-        objects_[hash] = t;
         auto size = get_size_(t);
         db_.Insert(make_priority_(t), hash, size);
+        objects_.emplace(hash, std::move(t));
 
         while (objects_.size() > max_memory_) {
             auto lowest_hash = db_.GetLowestMemoryHash();
